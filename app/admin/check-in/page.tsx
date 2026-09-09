@@ -53,48 +53,71 @@ export default function CheckInPage() {
     }
   }
 
-  // Start the camera scanner whenever we're in the "no result" scanning view
- useEffect(() => {
+// Start the camera scanner whenever we're in the "no result" scanning view
+useEffect(() => {
   if (result) return;
 
-  let cancelled = false;
-  let isStarted = false;
-  const scanner = new Html5Qrcode(SCANNER_ELEMENT_ID);
-  scannerRef.current = scanner;
+  let html5QrcodeScanner: Html5Qrcode | null = null;
+  let isCleaningUp = false;
 
-  scanner
-    .start(
-      { facingMode: "environment" },
-      { fps: 10, qrbox: { width: 220, height: 220 } },
-      (decodedText) => {
-  if (cancelled) return;
-  console.log("[scanner] decoded:", JSON.stringify(decodedText));
-  submitCheckIn(decodedText);
-},
-      () => {
-        // per-frame "no QR found" callback — intentionally ignored
+  const startScanner = async () => {
+    const container = document.getElementById(SCANNER_ELEMENT_ID);
+    if (!container) return;
+    container.innerHTML = "";
+
+    const scanner = new Html5Qrcode(SCANNER_ELEMENT_ID);
+    html5QrcodeScanner = scanner;
+    scannerRef.current = scanner;
+
+    try {
+      await scanner.start(
+        { facingMode: "environment" },
+        { fps: 10, qrbox: { width: 220, height: 220 } },
+        (decodedText) => {
+          if (isCleaningUp) return;
+          console.log("[scanner] decoded:", JSON.stringify(decodedText));
+          submitCheckIn(decodedText);
+        },
+        () => {
+          // Frame error callback (ignored)
+        }
+      );
+
+      if (isCleaningUp) {
+        await scanner.stop();
+        scanner.clear();
       }
-    )
-    .then(() => {
-      isStarted = true;
-    })
-    .catch((err) => {
-      if (cancelled) return;
+    } catch (err) {
+      if (isCleaningUp) return;
+
+      if (err instanceof DOMException && err.name === "AbortError") {
+        console.warn(
+          "[scanner] Strict Mode double-invoke aborted an in-flight start — expected in dev."
+        );
+        return;
+      }
+
       setCameraError(
         "Camera unavailable. Use manual code entry below, or check browser camera permissions."
       );
       console.error("Camera start error:", err);
-    });
+    }
+  };
+
+  startScanner();
 
   return () => {
-    cancelled = true;
-    if (!isStarted) return; // never actually started — nothing to stop
-    scanner
-      .stop()
-      .then(() => scanner.clear())
-      .catch(() => {
-        // already stopped/cleared — safe to ignore
-      });
+    isCleaningUp = true;
+    if (html5QrcodeScanner) {
+      if (html5QrcodeScanner.isScanning) {
+        html5QrcodeScanner
+          .stop()
+          .then(() => html5QrcodeScanner?.clear())
+          .catch((err) => console.error("Error stopping scanner", err));
+      } else {
+        html5QrcodeScanner.clear();
+      }
+    }
   };
 }, [result]);
 
@@ -183,7 +206,7 @@ export default function CheckInPage() {
         {!result && (
           <>
             <div className="bg-[#0f1e3d] rounded-xl overflow-hidden relative mb-4">
-              <div id={SCANNER_ELEMENT_ID} className="w-full aspect-[4/3]" />
+              <div key={SCANNER_ELEMENT_ID} id={SCANNER_ELEMENT_ID} className="w-full aspect-[4/3]" />
 
               {cameraError && (
                 <div className="absolute inset-0 flex items-center justify-center px-6 text-center">
