@@ -14,3 +14,4 @@ GRANT EXECUTE ON FUNCTION public.register_attendee(
 GRANT EXECUTE ON FUNCTION public.register_attendee(
     TEXT, TEXT, TEXT, TEXT, UUID, TEXT, TEXT, TEXT, TEXT, BOOLEAN
 ) TO authenticated;
+

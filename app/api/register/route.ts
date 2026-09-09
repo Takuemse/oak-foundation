@@ -5,18 +5,30 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
 
-    const {
-      firstName,
-      lastName,
-      email,
-      phone,
-      organizationId,
-      role,
-      dietaryRequirements,
-      accessibilityRequirements,
-      travelRequirements,
-      consentGiven,
-    } = body;
+const {
+  firstName,
+  lastName,
+  email,
+  phone,
+  organizationName,
+  subPartner,
+  role,
+  dietaryRequirements,
+  accessibilityRequirements,
+  travelRequirements,
+  consentGiven,
+} = body;
+
+if (!firstName || !lastName || !email || !phone || !organizationName) {
+  return NextResponse.json(
+    {
+      success: false,
+      message:
+        "First name, last name, email, phone, and organization are required.",
+    },
+    { status: 400 }
+  );
+}
 
     // Basic required field validation
     if (!firstName || !lastName || !email || !phone) {
@@ -63,24 +75,19 @@ export async function POST(request: NextRequest) {
 
     const supabase = createServerSupabaseClient();
 
-    const { data, error } = await supabase.rpc(
-      "register_attendee",
-      {
-        p_first_name: firstName,
-        p_last_name: lastName,
-        p_email: email,
-        p_phone: phone,
-        p_organization_id: organizationId || null,
-        p_role: role || null,
-        p_dietary_requirements:
-          dietaryRequirements || null,
-        p_accessibility_requirements:
-          accessibilityRequirements || null,
-        p_travel_requirements:
-          travelRequirements || null,
-        p_consent_given: consentGiven,
-      }
-    );
+const { data, error } = await supabase.rpc("register_attendee", {
+  p_first_name: firstName,
+  p_last_name: lastName,
+  p_email: email,
+  p_phone: phone,
+  p_organization_name: organizationName,
+  p_sub_partner: subPartner || null,
+  p_role: role || null,
+  p_dietary_requirements: dietaryRequirements || null,
+  p_accessibility_requirements: accessibilityRequirements || null,
+  p_travel_requirements: travelRequirements || null,
+  p_consent_given: consentGiven,
+});
 
     if (error) {
       console.error("Registration error:", error);

@@ -1,3 +1,3 @@
-SELECT first_name, last_name, qr_token
+SELECT first_name, organization_name, sub_partner
 FROM public.attendees
-WHERE email = 'test@example.com';
+WHERE email = 'sarah.connor@example.com';
