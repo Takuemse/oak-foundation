@@ -1,12 +1,5 @@
-SELECT *
-FROM public.register_attendee(
-    p_first_name := 'Test',
-    p_last_name := 'Attendee',
-    p_email := 'test@example.com',
-    p_phone := '+263771234567',
-    p_role := 'Programme Officer',
-    p_dietary_requirements := 'Vegetarian',
-    p_accessibility_requirements := NULL,
-    p_travel_requirements := 'Transport required',
-    p_consent_given := TRUE
-);
+SELECT d.title, d.event_date, count(s.id) AS session_count
+FROM public.programme_days d
+LEFT JOIN public.programme_sessions s ON s.programme_day_id = d.id
+GROUP BY d.id, d.title, d.event_date
+ORDER BY d.event_date;
