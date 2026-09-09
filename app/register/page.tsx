@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { QRCodeSVG } from "qrcode.react";
+import { QRCodeCanvas } from "qrcode.react";
 
 type RegisterResponse = {
   success: boolean;
@@ -341,6 +342,19 @@ function RegistrationSuccess({
   attendee: NonNullable<RegisterResponse["attendee"]>;
   onRegisterAnother: () => void;
 }) {
+  const canvasWrapperRef = useRef<HTMLDivElement>(null);
+
+  function handleDownload() {
+    const canvas = canvasWrapperRef.current?.querySelector("canvas");
+    if (!canvas) return;
+
+    const url = canvas.toDataURL("image/png");
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `oak-entry-pass-${attendee.firstName}-${attendee.lastName}.png`;
+    link.click();
+  }
+
   return (
     <>
       <div className="bg-[#0f1e3d] text-white rounded-xl px-5 py-4 mb-4">
@@ -363,8 +377,8 @@ function RegistrationSuccess({
         <p className="text-[11px] uppercase tracking-wide text-slate-400 mb-3">
           Your Entry Pass
         </p>
-        <div className="flex justify-center mb-3">
-          <QRCodeSVG value={attendee.qrToken} size={200} />
+        <div ref={canvasWrapperRef} className="flex justify-center mb-3">
+          <QRCodeCanvas value={attendee.qrToken} size={200} />
         </div>
         <p className="text-xs text-slate-500 font-mono">{attendee.qrToken}</p>
         <p className="text-[11px] text-slate-400 mt-1">
@@ -377,6 +391,13 @@ function RegistrationSuccess({
         <Row label="Event Dates" value="9–11 November 2026" />
         <Row label="Location" value="Harare, Zimbabwe" />
       </div>
+
+      <button
+        onClick={handleDownload}
+        className="w-full bg-[#0f1e3d] text-white rounded-lg py-2.5 text-sm font-medium hover:bg-[#16295c] transition mb-3"
+      >
+        Download QR Code
+      </button>
 
       <button
         onClick={onRegisterAnother}
