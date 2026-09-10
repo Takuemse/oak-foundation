@@ -111,6 +111,27 @@ export default function AdminDocumentationPage() {
     await loadPosts();
   }
 
+  function SidebarLink({
+  label,
+  href,
+  active = false,
+}: {
+  label: string;
+  href: string;
+  active?: boolean;
+}) {
+  return (
+    <Link
+      href={href}
+      className={`block px-3 py-2 rounded-lg text-sm font-medium ${
+        active ? "bg-[#0f1e3d] text-white" : "text-slate-500 hover:bg-slate-50"
+      }`}
+    >
+      {label}
+    </Link>
+  );
+}
+
   async function handlePhotoUpload(postId: string, file: File) {
     setError(null);
     setUploadingFor(postId);
@@ -201,6 +222,13 @@ export default function AdminDocumentationPage() {
         <h1 className="text-lg font-semibold">Manage Documentation</h1>
         <p className="text-sm text-slate-300 mt-0.5">Publish daily event notes and photos</p>
       </div>
+
+      <nav className="px-3 py-4 space-y-1">
+  <SidebarLink label="Check In" href="/admin/check-in" />
+  <SidebarLink label="Attendance" href="/admin/attendance" />
+  <SidebarLink label="Documentation" href="/admin/documentation" />
+  <SidebarLink label="Partners" href="/admin/partners" />
+</nav>
 
       {error && (
         <div className="bg-red-50 text-red-700 text-sm rounded-lg px-4 py-3 mb-4">{error}</div>

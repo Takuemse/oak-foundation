@@ -49,13 +49,12 @@ export default function AttendancePage() {
               Partner Convening 2026
             </div>
           </div>
-          <nav className="px-3 py-4 space-y-1">
-            <SidebarLink label="Register" href="/register" />
-            <SidebarLink label="Check In" href="/admin/check-in" />
-            <SidebarLink label="Programme" href="/programme" />
-            <SidebarLink label="Partners" href="/partners" />
-            <SidebarLink label="Attendance" href="/admin/attendance" active />
-          </nav>
+<nav className="px-3 py-4 space-y-1">
+  <SidebarLink label="Check In" href="/admin/check-in" />
+  <SidebarLink label="Attendance" href="/admin/attendance" />
+  <SidebarLink label="Documentation" href="/admin/documentation" />
+  <SidebarLink label="Partners" href="/admin/partners" />
+</nav>
         </div>
         <div className="px-5 py-4 text-xs text-slate-400 border-t border-slate-100">
           Harare, Zimbabwe

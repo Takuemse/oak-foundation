@@ -63,6 +63,7 @@ export default function ProgrammePage() {
             <SidebarLink label="Register" href="/register" />
             <SidebarLink label="Programme" href="/programme" active />
             <SidebarLink label="Partners" href="/partners" />
+            <SidebarLink label="Documentation" href="/documentation" />
           </nav>
         </div>
         <div className="px-5 py-4 text-xs text-slate-400 border-t border-slate-100">

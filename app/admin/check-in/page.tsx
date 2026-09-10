@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Html5Qrcode } from "html5-qrcode";
+import Link from "next/link";
 
 type CheckInResult = {
   success: boolean;
@@ -19,6 +20,9 @@ type CheckInResult = {
   };
 };
 
+
+
+
 const SCANNER_ELEMENT_ID = "qr-reader";
 
 export default function CheckInPage() {
@@ -29,6 +33,8 @@ export default function CheckInPage() {
 
   const scannerRef = useRef<Html5Qrcode | null>(null);
   const isSubmittingRef = useRef(false);
+
+
 
   async function submitCheckIn(token: string) {
     if (!token.trim() || isSubmittingRef.current) return;
@@ -52,6 +58,8 @@ export default function CheckInPage() {
       isSubmittingRef.current = false;
     }
   }
+
+  
 
 // Start the camera scanner whenever we're in the "no result" scanning view
 useEffect(() => {
@@ -131,6 +139,27 @@ useEffect(() => {
     setCameraError(null);
   }
 
+  function SidebarLink({
+  label,
+  href,
+  active = false,
+}: {
+  label: string;
+  href: string;
+  active?: boolean;
+}) {
+  return (
+    <Link
+      href={href}
+      className={`block px-3 py-2 rounded-lg text-sm font-medium ${
+        active ? "bg-[#0f1e3d] text-white" : "text-slate-500 hover:bg-slate-50"
+      }`}
+    >
+      {label}
+    </Link>
+  );
+}
+
   return (
     <div className="min-h-screen bg-slate-50 flex">
       <aside className="hidden md:flex w-56 flex-col justify-between border-r border-slate-200 bg-white">
@@ -143,12 +172,12 @@ useEffect(() => {
               Partner Convening 2026
             </div>
           </div>
-          <nav className="px-3 py-4 space-y-1">
-            <SidebarLink label="Check In" active />
-            <SidebarLink label="Programme" />
-            <SidebarLink label="Partners" />
-            <SidebarLink label="Attendance" />
-          </nav>
+<nav className="px-3 py-4 space-y-1">
+  <SidebarLink label="Check In" href="/admin/check-in" />
+  <SidebarLink label="Attendance" href="/admin/attendance" />
+  <SidebarLink label="Documentation" href="/admin/documentation" />
+  <SidebarLink label="Partners" href="/admin/partners" />
+</nav>
         </div>
         <div className="px-5 py-4 text-xs text-slate-400 border-t border-slate-100">
           Harare, Zimbabwe

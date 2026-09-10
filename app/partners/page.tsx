@@ -1,129 +1,181 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { createBrowserSupabaseClient } from "@/app/lib/superbase/browser";
 
 type Org = {
   id: string;
   name: string;
-  logo_path: string | null;
+  organization_type: string;
+  website_url: string | null;
+  description: string | null;
   logoUrl: string | null;
 };
 
-export default function AdminPartnersPage() {
+export default function PartnersPage() {
   const [orgs, setOrgs] = useState<Org[]>([]);
+  const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(true);
-  const [uploadingId, setUploadingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  async function load() {
-    setLoading(true);
-    try {
-      const res = await fetch("/api/partners");
-      const data = await res.json();
-      if (data.success) setOrgs(data.organizations);
-    } finally {
-      setLoading(false);
-    }
-  }
-
   useEffect(() => {
+    async function load() {
+      try {
+        const res = await fetch("/api/partners");
+        const data = await res.json();
+        if (!data.success) {
+          setError(data.message ?? "Unable to load partners.");
+          return;
+        }
+        setOrgs(data.organizations);
+      } catch {
+        setError("Network error. Please try again.");
+      } finally {
+        setLoading(false);
+      }
+    }
     load();
   }, []);
 
-  async function handleUpload(orgId: string, file: File) {
-    setError(null);
-    setUploadingId(orgId);
-
-    try {
-      const supabase = createBrowserSupabaseClient();
-      const ext = file.name.split(".").pop();
-      const path = `${orgId}.${ext}`;
-
-      const { error: uploadError } = await supabase.storage
-        .from("logos")
-        .upload(path, file, { upsert: true });
-
-      if (uploadError) {
-        setError(uploadError.message);
-        return;
-      }
-
-      const { error: updateError } = await supabase
-        .from("organizations")
-        .update({ logo_path: path })
-        .eq("id", orgId);
-
-      if (updateError) {
-        setError(updateError.message);
-        return;
-      }
-
-      await load();
-    } finally {
-      setUploadingId(null);
-    }
-  }
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return orgs;
+    return orgs.filter((o) => o.name.toLowerCase().includes(q));
+  }, [orgs, query]);
 
   return (
-    <div className="min-h-screen bg-slate-50 px-4 py-6 sm:px-8 sm:py-10 max-w-xl mx-auto">
-      <div className="bg-[#0f1e3d] text-white rounded-xl px-5 py-4 mb-6">
-        <h1 className="text-lg font-semibold">Manage Partner Logos</h1>
-        <p className="text-sm text-slate-300 mt-0.5">
-          Upload a logo for each partner organization
-        </p>
-      </div>
-
-      {error && (
-        <div className="bg-red-50 text-red-700 text-sm rounded-lg px-4 py-3 mb-4">
-          {error}
-        </div>
-      )}
-
-      {loading ? (
-        <p className="text-sm text-slate-400">Loading…</p>
-      ) : (
-        <div className="space-y-3">
-          {orgs.map((org) => (
-            <div
-              key={org.id}
-              className="bg-white rounded-xl border border-slate-200 p-4 flex items-center gap-3"
-            >
-              <div className="w-12 h-12 rounded-lg bg-slate-100 flex items-center justify-center overflow-hidden flex-shrink-0">
-                {org.logoUrl ? (
-                  <img src={org.logoUrl} alt="" className="w-full h-full object-cover" />
-                ) : (
-                  <span className="text-xs text-slate-400">No logo</span>
-                )}
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-slate-800 truncate">{org.name}</p>
-                <label className="inline-block mt-1 text-xs text-blue-600 cursor-pointer">
-                  {uploadingId === org.id ? "Uploading…" : "Upload logo"}
-                  <input
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    disabled={uploadingId === org.id}
-                    onChange={(e) => {
-                      const file = e.target.files?.[0];
-                      if (file) handleUpload(org.id, file);
-                    }}
-                  />
-                </label>
-              </div>
+    <div className="min-h-screen bg-slate-50 flex">
+      <aside className="hidden md:flex w-56 flex-col justify-between border-r border-slate-200 bg-white">
+        <div>
+          <div className="px-5 pt-6 pb-4 border-b border-slate-100">
+            <div className="text-lg font-bold text-slate-900 tracking-tight">
+              OAK <span className="font-normal text-slate-400">FOUNDATION</span>
             </div>
-          ))}
+            <div className="text-[11px] uppercase tracking-wide text-slate-400 mt-1">
+              Partner Convening 2026
+            </div>
+          </div>
+          <nav className="px-3 py-4 space-y-1">
+            <SidebarLink label="Register" href="/register" />
+            <SidebarLink label="Programme" href="/programme" />
+            <SidebarLink label="Partners" href="/partners" active />
+            <SidebarLink label="Documentation" href="/documentation" />
+          </nav>
         </div>
-      )}
+        <div className="px-5 py-4 text-xs text-slate-400 border-t border-slate-100">
+          Harare, Zimbabwe
+          <br />
+          9–11 November 2026
+        </div>
+      </aside>
 
-      <Link
-        href="/partners"
-        className="block text-center mt-6 border border-slate-200 text-slate-500 rounded-lg py-2 text-xs font-medium hover:bg-white transition"
-      >
-        View Public Partner Directory
-      </Link>
+      <main className="flex-1 px-4 py-6 sm:px-8 sm:py-10 max-w-xl mx-auto w-full">
+        <h1 className="text-xl font-bold text-slate-900 mb-0.5">Partner Directory</h1>
+        <p className="text-sm text-slate-400 mb-4">
+          {orgs.length} partner organization{orgs.length !== 1 ? "s" : ""}
+        </p>
+
+        {error && (
+          <div className="bg-red-50 text-red-700 text-sm rounded-lg px-4 py-3 mb-4">
+            {error}
+          </div>
+        )}
+
+        <input
+          type="text"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Search organisations…"
+          className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm mb-5 focus:outline-none focus:ring-2 focus:ring-[#0f1e3d]/20 focus:border-[#0f1e3d]"
+        />
+
+        {loading ? (
+          <p className="text-sm text-slate-400">Loading…</p>
+        ) : filtered.length === 0 ? (
+          <p className="text-sm text-slate-400 text-center py-8">
+            No partners match your search.
+          </p>
+        ) : (
+          <div className="space-y-3">
+            {filtered.map((org) => (
+              
+            <a    key={org.id}
+                href={org.website_url ?? "#"}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block bg-white rounded-xl border border-slate-200 p-4 hover:border-slate-300 transition"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-lg bg-[#0f1e3d] text-white flex items-center justify-center text-xs font-semibold flex-shrink-0 overflow-hidden">
+                    {org.logoUrl ? (
+                      <img
+                        src={org.logoUrl}
+                        alt={`${org.name} logo`}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      initials(org.name)
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-slate-800 truncate">
+                      {org.name}
+                    </p>
+                    {org.description && (
+                      <p className="text-xs text-slate-500 mt-0.5 line-clamp-2">
+                        {org.description}
+                      </p>
+                    )}
+                    {org.website_url && (
+                      <p className="text-[11px] text-blue-600 mt-1 truncate">
+                        {org.website_url.replace(/^https?:\/\//, "")}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </a>
+            ))}
+          </div>
+        )}
+
+        <Link
+          href="/register"
+          className="block text-center mt-6 border border-slate-200 text-slate-500 rounded-lg py-2 text-xs font-medium hover:bg-white transition"
+        >
+          Back to Registration
+        </Link>
+      </main>
     </div>
   );
+}
+
+function SidebarLink({
+  label,
+  href,
+  active = false,
+}: {
+  label: string;
+  href: string;
+  active?: boolean;
+}) {
+  return (
+    <Link
+      href={href}
+      className={`block px-3 py-2 rounded-lg text-sm font-medium ${
+        active ? "bg-[#0f1e3d] text-white" : "text-slate-500 hover:bg-slate-50"
+      }`}
+    >
+      {label}
+    </Link>
+  );
+}
+
+function initials(name: string) {
+  return name
+    .split(" ")
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((w) => w[0])
+    .join("")
+    .toUpperCase();
 }

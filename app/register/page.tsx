@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
+import Link from "next/link";
 import { QRCodeCanvas } from "qrcode.react";
 
 type RegisterResponse = {
@@ -107,11 +108,10 @@ export default function RegisterPage() {
             </div>
           </div>
           <nav className="px-3 py-4 space-y-1">
-            <SidebarLink label="Register" active />
-            <SidebarLink label="Check In" />
-            <SidebarLink label="Programme" />
-            <SidebarLink label="Partners" />
-            <SidebarLink label="Attendance" />
+            <SidebarLink label="Register" href="/register" active />
+            <SidebarLink label="Programme" href="/programme" />
+            <SidebarLink label="Partners" href="/partners" />
+            <SidebarLink label="Documentation" href="/documentation" />
           </nav>
         </div>
         <div className="px-5 py-4 text-xs text-slate-400 border-t border-slate-100">
@@ -322,15 +322,24 @@ function StatCard({ value, label }: { value: string; label: string }) {
   );
 }
 
-function SidebarLink({ label, active = false }: { label: string; active?: boolean }) {
+function SidebarLink({
+  label,
+  href,
+  active = false,
+}: {
+  label: string;
+  href: string;
+  active?: boolean;
+}) {
   return (
-    <div
-      className={`px-3 py-2 rounded-lg text-sm font-medium cursor-pointer ${
+    <Link
+      href={href}
+      className={`block px-3 py-2 rounded-lg text-sm font-medium ${
         active ? "bg-[#0f1e3d] text-white" : "text-slate-500 hover:bg-slate-50"
       }`}
     >
       {label}
-    </div>
+    </Link>
   );
 }
 
@@ -347,7 +356,6 @@ function RegistrationSuccess({
     const originalCanvas = canvasWrapperRef.current?.querySelector("canvas");
     if (!originalCanvas) return;
 
-    // 1. Create an off-screen canvas with extra quiet-zone margin
     const padding = 32;
     const exportCanvas = document.createElement("canvas");
     exportCanvas.width = originalCanvas.width + padding * 2;
@@ -356,14 +364,11 @@ function RegistrationSuccess({
     const ctx = exportCanvas.getContext("2d");
     if (!ctx) return;
 
-    // 2. Fill background with solid white
     ctx.fillStyle = "#FFFFFF";
     ctx.fillRect(0, 0, exportCanvas.width, exportCanvas.height);
 
-    // 3. Draw the original QR code centered onto the white canvas
     ctx.drawImage(originalCanvas, padding, padding);
 
-    // 4. Trigger download
     const url = exportCanvas.toDataURL("image/png");
     const link = document.createElement("a");
     link.href = url;

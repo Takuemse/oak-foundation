@@ -53,12 +53,12 @@ export default function DocumentationPage() {
               Partner Convening 2026
             </div>
           </div>
-          <nav className="px-3 py-4 space-y-1">
-            <SidebarLink label="Register" href="/register" />
-            <SidebarLink label="Programme" href="/programme" />
-            <SidebarLink label="Partners" href="/partners" />
-            <SidebarLink label="Documentation" href="/documentation" active />
-          </nav>
+<nav className="px-3 py-4 space-y-1">
+  <SidebarLink label="Register" href="/register" />
+  <SidebarLink label="Programme" href="/programme" />
+  <SidebarLink label="Partners" href="/partners" />
+  <SidebarLink label="Documentation" href="/documentation" active />
+</nav>
         </div>
         <div className="px-5 py-4 text-xs text-slate-400 border-t border-slate-100">
           Harare, Zimbabwe
