@@ -1,20 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createSessionSupabaseClient } from "@/app/lib/superbase/server-auth";
+import { createServerSupabaseClient } from "@/app/lib/superbase/server";
 
 export async function GET(request: NextRequest) {
   try {
-    const supabase = await createSessionSupabaseClient();
+    const supabase = createServerSupabaseClient();
 
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    if (!user) {
-      return NextResponse.json(
-        { success: false, message: "Not authenticated." },
-        { status: 401 }
-      );
-    }
 
     const eventDate = request.nextUrl.searchParams.get("eventDate");
 

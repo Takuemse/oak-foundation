@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createSessionSupabaseClient } from "@/app/lib/superbase/server-auth";
+import { createServerSupabaseClient } from "@/app/lib/superbase/server";
 
 export async function POST(request: NextRequest) {
   try {
@@ -13,18 +13,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const supabase = await createSessionSupabaseClient();
+    const supabase =  createServerSupabaseClient();
 
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    if (!user) {
-      return NextResponse.json(
-        { success: false, message: "Not authenticated." },
-        { status: 401 }
-      );
-    }
 
     const { data, error } = await supabase.rpc("check_in_attendee", {
       p_qr_token: qrToken,

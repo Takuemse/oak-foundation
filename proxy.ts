@@ -28,13 +28,15 @@ export async function proxy(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser();
 
 
-  if (
-    request.nextUrl.pathname.startsWith("/admin") &&
-    !request.nextUrl.pathname.startsWith("/admin/login") &&
-    !user
-  ) {
-    return NextResponse.redirect(new URL("/admin/login", request.url));
-  }
+const isProtectedAdminPath =
+  request.nextUrl.pathname.startsWith("/admin") &&
+  !request.nextUrl.pathname.startsWith("/admin/login") &&
+  !request.nextUrl.pathname.startsWith("/admin/check-in") &&
+  !request.nextUrl.pathname.startsWith("/admin/attendance");
+
+if (isProtectedAdminPath && !user) {
+  return NextResponse.redirect(new URL("/admin/login", request.url));
+}
 
   return response;
 }

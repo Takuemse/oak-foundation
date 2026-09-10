@@ -41,9 +41,9 @@ CREATE TABLE public.organizations (
 CREATE TABLE public.attendees (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 
-    qr_token TEXT NOT NULL
-        UNIQUE
-        DEFAULT encode(gen_random_bytes(16), 'hex'),
+   qr_token TEXT NOT NULL
+    UNIQUE
+    DEFAULT encode(extensions.gen_random_bytes(16), 'hex'),
 
     first_name TEXT NOT NULL,
 

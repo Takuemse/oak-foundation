@@ -134,12 +134,7 @@ async function saveEdit(orgId: string) {
       
 
 
-      <nav className="px-3 py-4 space-y-1">
-  <SidebarLink label="Check In" href="/admin/check-in" />
-  <SidebarLink label="Attendance" href="/admin/attendance" />
-  <SidebarLink label="Documentation" href="/admin/documentation" />
-  <SidebarLink label="Partners" href="/admin/partners" />
-</nav>
+
 
 
       

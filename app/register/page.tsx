@@ -3,6 +3,7 @@
 import { useState, useRef } from "react";
 import Link from "next/link";
 import { QRCodeCanvas } from "qrcode.react";
+import { useRouter } from "next/navigation";
 
 type RegisterResponse = {
   success: boolean;
@@ -15,14 +16,15 @@ type RegisterResponse = {
   };
 };
 
-const ROLES = [
-  "Partner",
-  "Sub-Partner",
-  "OAK Staff",
-  "Coordination Team",
-  "Speaker",
-  "Other",
-];
+const router = useRouter();
+
+const ROLES = ["Partner",
+   "OAK Staff", 
+   "Coordination Team",
+    "Presenter", 
+    "Observer"];
+
+    
 
 export default function RegisterPage() {
   const [form, setForm] = useState({
@@ -67,6 +69,15 @@ export default function RegisterPage() {
       if (!data.success || !data.attendee) {
         setError(data.message ?? "Registration failed. Please try again.");
         return;
+        
+      }
+      
+      if (form.role === "Partner") {
+       setResult(data.attendee);
+       } else if (form.role === "Coordination Team") {
+       router.push("/admin/check-in");
+       } else {
+       router.push("/dashboard");
       }
 
       setResult(data.attendee);
@@ -75,7 +86,12 @@ export default function RegisterPage() {
     } finally {
       setLoading(false);
     }
+    
   }
+
+  
+
+
 
   function registerAnother() {
     setResult(null);
