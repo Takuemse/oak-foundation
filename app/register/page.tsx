@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { QRCodeSVG } from "qrcode.react";
 import { QRCodeCanvas } from "qrcode.react";
 
 type RegisterResponse = {
@@ -345,13 +344,30 @@ function RegistrationSuccess({
   const canvasWrapperRef = useRef<HTMLDivElement>(null);
 
   function handleDownload() {
-    const canvas = canvasWrapperRef.current?.querySelector("canvas");
-    if (!canvas) return;
+    const originalCanvas = canvasWrapperRef.current?.querySelector("canvas");
+    if (!originalCanvas) return;
 
-    const url = canvas.toDataURL("image/png");
+    // 1. Create an off-screen canvas with extra quiet-zone margin
+    const padding = 32;
+    const exportCanvas = document.createElement("canvas");
+    exportCanvas.width = originalCanvas.width + padding * 2;
+    exportCanvas.height = originalCanvas.height + padding * 2;
+
+    const ctx = exportCanvas.getContext("2d");
+    if (!ctx) return;
+
+    // 2. Fill background with solid white
+    ctx.fillStyle = "#FFFFFF";
+    ctx.fillRect(0, 0, exportCanvas.width, exportCanvas.height);
+
+    // 3. Draw the original QR code centered onto the white canvas
+    ctx.drawImage(originalCanvas, padding, padding);
+
+    // 4. Trigger download
+    const url = exportCanvas.toDataURL("image/png");
     const link = document.createElement("a");
     link.href = url;
-    link.download = `oak-entry-pass-${attendee.firstName}-${attendee.lastName}.png`;
+    link.download = `oak-entry-pass-${attendee.firstName.toLowerCase()}-${attendee.lastName.toLowerCase()}.png`;
     link.click();
   }
 
@@ -378,7 +394,14 @@ function RegistrationSuccess({
           Your Entry Pass
         </p>
         <div ref={canvasWrapperRef} className="flex justify-center mb-3">
-          <QRCodeCanvas value={attendee.qrToken} size={200} />
+          <QRCodeCanvas
+            value={attendee.qrToken}
+            size={200}
+            bgColor="#FFFFFF"
+            fgColor="#000000"
+            level="M"
+            marginSize={2}
+          />
         </div>
         <p className="text-xs text-slate-500 font-mono">{attendee.qrToken}</p>
         <p className="text-[11px] text-slate-400 mt-1">
