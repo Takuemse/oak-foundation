@@ -131,6 +131,7 @@ async function saveEdit(orgId: string) {
           Upload a logo for each partner organization
         </p>
       </div>
+      
 
 
       <nav className="px-3 py-4 space-y-1">
