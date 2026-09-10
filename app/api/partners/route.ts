@@ -18,7 +18,14 @@ export async function GET() {
       );
     }
 
-    return NextResponse.json({ success: true, organizations: data ?? [] });
+    const organizations = (data ?? []).map((org) => ({
+      ...org,
+      logoUrl: org.logo_path
+        ? supabase.storage.from("logos").getPublicUrl(org.logo_path).data.publicUrl
+        : null,
+    }));
+
+    return NextResponse.json({ success: true, organizations });
   } catch (err) {
     console.error("API partners error:", err);
     return NextResponse.json(
