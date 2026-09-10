@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useRef } from "react";
-import Link from "next/link";
+import { useState, useRef, useEffect } from "react";
 import { QRCodeCanvas } from "qrcode.react";
 import { useRouter } from "next/navigation";
+import AppSidebar from "@/app/components/AppSidebar";
 
 type RegisterResponse = {
   success: boolean;
@@ -13,20 +13,17 @@ type RegisterResponse = {
     firstName: string;
     lastName: string;
     qrToken: string;
+    organizationName?: string;
+    role?: string;
+    email?: string;
   };
 };
 
-const router = useRouter();
-
-const ROLES = ["Partner",
-   "OAK Staff", 
-   "Coordination Team",
-    "Presenter", 
-    "Observer"];
-
-    
+const ROLES = ["Partner", "OAK Staff", "Coordination Team", "Presenter", "Observer"];
 
 export default function RegisterPage() {
+  const router = useRouter();
+
   const [form, setForm] = useState({
     firstName: "",
     lastName: "",
@@ -52,6 +49,11 @@ export default function RegisterPage() {
     e.preventDefault();
     setError(null);
 
+    if (!form.role) {
+      setError("Please select a role to continue.");
+      return;
+    }
+
     if (!form.consentGiven) {
       setError("Please agree to the privacy policy to continue.");
       return;
@@ -69,29 +71,21 @@ export default function RegisterPage() {
       if (!data.success || !data.attendee) {
         setError(data.message ?? "Registration failed. Please try again.");
         return;
-        
-      }
-      
-      if (form.role === "Partner") {
-       setResult(data.attendee);
-       } else if (form.role === "Coordination Team") {
-       router.push("/admin/check-in");
-       } else {
-       router.push("/dashboard");
       }
 
-      setResult(data.attendee);
+      if (form.role === "Partner") {
+        setResult(data.attendee);
+      } else if (form.role === "Coordination Team") {
+        router.push("/admin/check-in");
+      } else {
+        router.push("/dashboard");
+      }
     } catch {
       setError("Network error. Please try again.");
     } finally {
       setLoading(false);
     }
-    
   }
-
-  
-
-
 
   function registerAnother() {
     setResult(null);
@@ -112,62 +106,92 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 flex">
-      <aside className="hidden md:flex w-56 flex-col justify-between border-r border-slate-200 bg-white">
-        <div>
-          <div className="px-5 pt-6 pb-4 border-b border-slate-100">
-            <div className="text-lg font-bold text-slate-900 tracking-tight">
-              OAK <span className="font-normal text-slate-400">FOUNDATION</span>
-            </div>
-            <div className="text-[11px] uppercase tracking-wide text-slate-400 mt-1">
-              Partner Convening 2026
-            </div>
-          </div>
-          <nav className="px-3 py-4 space-y-1">
-            <SidebarLink label="Register" href="/register" active />
-            <SidebarLink label="Programme" href="/programme" />
-            <SidebarLink label="Partners" href="/partners" />
-            <SidebarLink label="Documentation" href="/documentation" />
-          </nav>
-        </div>
-        <div className="px-5 py-4 text-xs text-slate-400 border-t border-slate-100">
-          Harare, Zimbabwe
-          <br />
-          9–11 November 2026
-        </div>
-      </aside>
+    <div className="min-h-screen bg-[#f4f6f8] flex text-slate-800 font-sans">
+      <AppSidebar />
 
-      <main className="flex-1 px-4 py-6 sm:px-8 sm:py-10 max-w-xl mx-auto w-full">
+      <main className="flex-1 px-4 py-8 sm:px-8 sm:py-10 max-w-[608px] mx-auto w-full">
         {result ? (
           <RegistrationSuccess attendee={result} onRegisterAnother={registerAnother} />
         ) : (
           <>
-            <div className="bg-[#0f1e3d] text-white rounded-xl px-5 py-4 mb-4">
-              <h1 className="text-lg font-semibold">Partner Convening 2026</h1>
-              <p className="text-sm text-slate-300 mt-0.5">
-                Harare · 9–11 November 2026
-              </p>
+            {/* Header Banner */}
+            <div className="relative overflow-hidden mb-4 p-6 flex flex-col justify-between w-full h-[167px] bg-[#162E55] rounded-[24px] shadow-[0px_1px_3px_rgba(28,46,90,0.05),0px_4px_16px_rgba(28,46,90,0.07)]">
+              {/* Radial Light Glow Effect */}
+              <div
+                className="pointer-events-none absolute w-[192px] h-[192px] left-[458.5px] -top-[49px] rounded-full"
+                style={{
+                  background:
+                    "radial-gradient(70.71% 70.71% at 50% 50%, rgba(168, 187, 206, 0.2) 0%, rgba(168, 187, 206, 0) 70%)",
+                }}
+              />
+
+              {/* Header Text Content */}
+              <div className="relative z-10 flex flex-col justify-between h-full pt-1">
+                <div>
+                  <h1 className="font-chillax font-bold text-[30px] leading-[38px] text-white">
+                    Partner <br />
+                    Convening 2026
+                  </h1>
+                </div>
+
+                <p className="font-sans font-normal text-[14px] leading-[20px] text-white/50">
+                  Harare · 9–11 March 2026
+                </p>
+              </div>
             </div>
 
-            <div className="grid grid-cols-3 gap-2 mb-6">
-              <StatCard value="110+" label="Attendees" />
-              <StatCard value="24" label="Sessions" />
-              <StatCard value="38" label="Partners" />
+            {/* Stat Cards */}
+            <div className="grid grid-cols-3 gap-3 mb-4 w-full h-[98px]">
+              <StatCard
+                value="110+"
+                label="Attendees"
+                icon={
+                  <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  </svg>
+                }
+              />
+              <StatCard
+                value="24"
+                label="Sessions"
+                icon={
+                  <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                }
+              />
+              <StatCard
+                value="38"
+                label="Partners"
+                icon={
+                  <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                  </svg>
+                }
+              />
             </div>
 
             {error && (
-              <div className="bg-red-50 text-red-700 text-sm rounded-lg px-4 py-3 mb-4">
+              <div className="bg-red-50 text-red-700 text-xs rounded-xl px-4 py-3 mb-4 border border-red-100">
                 {error}
               </div>
             )}
 
-            <form onSubmit={handleSubmit} className="bg-white rounded-xl border border-slate-200 p-5 space-y-4">
-              <h2 className="text-sm font-semibold text-slate-800">Registration Form</h2>
+            {/* Registration Form */}
+            <form
+              onSubmit={handleSubmit}
+              className="w-full bg-white rounded-[24px] p-5 shadow-[0px_1px_3px_rgba(28,46,90,0.05),0px_4px_16px_rgba(28,46,90,0.07)] border border-[rgba(28,46,90,0.1)] flex flex-col gap-4 text-left"
+            >
+              <h2 className="font-chillax font-semibold text-[18px] leading-[28px] text-[#0E1726]">
+                Registration Form
+              </h2>
 
-              <div className="grid grid-cols-2 gap-3">
+              {/* Name Fields Row */}
+              <div className="grid grid-cols-2 gap-3.5">
                 <Field label="First Name" required>
                   <input
                     required
+                    placeholder="Maria"
                     value={form.firstName}
                     onChange={(e) => update("firstName", e.target.value)}
                     className={inputClass}
@@ -176,6 +200,7 @@ export default function RegisterPage() {
                 <Field label="Last Name" required>
                   <input
                     required
+                    placeholder="Schmidt"
                     value={form.lastName}
                     onChange={(e) => update("lastName", e.target.value)}
                     className={inputClass}
@@ -202,22 +227,12 @@ export default function RegisterPage() {
                 />
               </Field>
 
+              {/* Custom Role Dropdown */}
               <Field label="Role / Capacity" required>
-                <select
-                  required
+                <CustomRoleDropdown
                   value={form.role}
-                  onChange={(e) => update("role", e.target.value)}
-                  className={inputClass}
-                >
-                  <option value="" disabled>
-                    Select your role
-                  </option>
-                  {ROLES.map((r) => (
-                    <option key={r} value={r}>
-                      {r}
-                    </option>
-                  ))}
-                </select>
+                  onChange={(role) => update("role", role)}
+                />
               </Field>
 
               <Field label="Email Address" required>
@@ -234,17 +249,18 @@ export default function RegisterPage() {
               <Field label="Phone Number">
                 <input
                   type="tel"
-                  placeholder="+263 xx xxx xx xx"
+                  placeholder="+41 xx xxx xx xx"
                   value={form.phone}
                   onChange={(e) => update("phone", e.target.value)}
                   className={inputClass}
                 />
               </Field>
 
-              <div className="pt-2 border-t border-slate-100 space-y-3">
-                <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
+              {/* Requirements Container Block */}
+              <div className="bg-[#EEF1F5] rounded-[16px] p-4 border border-[rgba(28,46,90,0.1)] flex flex-col gap-3">
+                <span className="font-sans font-semibold text-[10px] leading-[15px] tracking-[1px] text-[#6B7590] uppercase">
                   Requirements
-                </h3>
+                </span>
 
                 <Field label="Dietary Requirements">
                   <input
@@ -274,32 +290,39 @@ export default function RegisterPage() {
                 </Field>
               </div>
 
-              <label className="flex items-start gap-2 text-xs text-slate-500 pt-2">
+              {/* Consent Card */}
+              <label className="flex items-start gap-3 p-4 border border-[rgba(28,46,90,0.18)] rounded-[16px] cursor-pointer hover:bg-slate-50 transition">
                 <input
                   type="checkbox"
                   checked={form.consentGiven}
                   onChange={(e) => update("consentGiven", e.target.checked)}
-                  className="mt-0.5"
+                  className="mt-0.5 w-5 h-5 rounded-[6px] border-2 border-[rgba(28,46,90,0.18)] text-[#162E55] focus:ring-[#162E55] accent-[#162E55]"
                 />
-                <span>
-                  I agree to OAK Foundation&apos;s privacy policy and consent to my
-                  registration data being used for event coordination.
+                <span className="font-sans font-normal text-[14px] leading-[23px] text-[#0E1726]">
+                  I agree to OAK Foundation&apos;s{" "}
+                  <a href="#" className="underline font-medium hover:text-[#162E55]">
+                    privacy policy
+                  </a>{" "}
+                  and consent to my registration data being used for event coordination.
                 </span>
               </label>
 
+              {/* Submit Button */}
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-[#0f1e3d] text-white rounded-lg py-2.5 text-sm font-medium hover:bg-[#16295c] transition disabled:opacity-50"
+                className="w-full h-[56px] bg-[#162E55] text-white rounded-[16px] font-chillax font-semibold text-[16px] leading-[24px] transition duration-150 disabled:opacity-50 flex items-center justify-center shadow-[0px_4px_20px_rgba(28,46,90,0.3)] hover:bg-[#0f213f]"
               >
-                {loading ? "Registering…" : "Register & Generate QR Code"}
+                {loading ? "Registering…" : "Register"}
               </button>
-
-              <p className="text-[11px] text-slate-400 text-center pt-1">
-                Your data is secured and handled by OAK Foundation in accordance
-                with GDPR.
-              </p>
             </form>
+
+            {/* Security Disclaimer Footer */}
+            <div className="w-full py-4 flex flex-col items-center">
+              <p className="font-sans font-normal text-[12px] leading-[16px] text-center text-[#6B7590] max-w-[452px]">
+                Your data is secured and handled by OAK Foundation in accordance with GDPR.
+              </p>
+            </div>
           </>
         )}
       </main>
@@ -308,7 +331,7 @@ export default function RegisterPage() {
 }
 
 const inputClass =
-  "w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0f1e3d]/20 focus:border-[#0f1e3d]";
+  "w-full h-[52.5px] rounded-[14px] bg-[#EEF1F5] px-4 text-[15px] text-[#0E1726] placeholder-[#6B7590] focus:outline-none focus:ring-2 focus:ring-[#162E55]/20 transition border-0";
 
 function Field({
   label,
@@ -320,42 +343,104 @@ function Field({
   children: React.ReactNode;
 }) {
   return (
-    <div>
-      <label className="text-xs font-medium text-slate-500 mb-1 block">
-        {label} {required && <span className="text-red-400">*</span>}
+    <div className="flex flex-col gap-[6px] w-full">
+      <label className="font-sans font-semibold text-[12px] leading-[16px] tracking-[0.3px] text-[#6B7590] uppercase flex items-center gap-1">
+        <span>{label}</span>
+        {required && <span className="text-[#FB2C36]">*</span>}
       </label>
       {children}
     </div>
   );
 }
 
-function StatCard({ value, label }: { value: string; label: string }) {
+function StatCard({ value, label, icon }: { value: string; label: string; icon?: React.ReactNode }) {
   return (
-    <div className="bg-white rounded-lg border border-slate-200 py-3 text-center">
-      <div className="text-sm font-semibold text-slate-800">{value}</div>
-      <div className="text-[11px] text-slate-400 mt-0.5">{label}</div>
+    <div className="bg-white rounded-2xl p-4 h-full shadow-sm flex flex-col justify-between text-left border border-slate-100">
+      <div>{icon}</div>
+      <div>
+        <div className="text-xl font-bold text-slate-900 leading-none">{value}</div>
+        <div className="text-[11px] text-slate-400 font-normal mt-1">{label}</div>
+      </div>
     </div>
   );
 }
 
-function SidebarLink({
-  label,
-  href,
-  active = false,
+function CustomRoleDropdown({
+  value,
+  onChange,
 }: {
-  label: string;
-  href: string;
-  active?: boolean;
+  value: string;
+  onChange: (role: string) => void;
 }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        setIsOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   return (
-    <Link
-      href={href}
-      className={`block px-3 py-2 rounded-lg text-sm font-medium ${
-        active ? "bg-[#0f1e3d] text-white" : "text-slate-500 hover:bg-slate-50"
-      }`}
-    >
-      {label}
-    </Link>
+    <div ref={containerRef} className="relative w-full">
+      <button
+        type="button"
+        onClick={() => setIsOpen((prev) => !prev)}
+        className={`${inputClass} flex items-center justify-between text-left border border-transparent focus:border-[#162E55] transition`}
+      >
+        <span className={value ? "text-[#0E1726]" : "text-[#6B7590]"}>
+          {value || "Select your role"}
+        </span>
+        <svg
+          className={`w-3.5 h-3.5 text-[#6B7590] transition-transform duration-200 ${
+            isOpen ? "rotate-180" : ""
+          }`}
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          viewBox="0 0 24 24"
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+
+      {isOpen && (
+        <div className="absolute left-0 top-full mt-2 w-full bg-white rounded-[15px] p-3.5 shadow-[0px_3px_12px_rgba(0,0,0,0.15)] border border-slate-100 z-50 flex flex-col gap-1.5 animate-in fade-in duration-100">
+          <div className="w-full h-[30px] px-[10px] py-[3px] bg-[#162E55] rounded-[5px] flex items-center shrink-0">
+            <span className="font-['Inter'] font-normal text-[15px] leading-[22px] text-white">
+              Select your role
+            </span>
+          </div>
+
+          <div className="flex flex-col w-full">
+            {ROLES.map((role) => {
+              const isSelected = value === role;
+              return (
+                <button
+                  key={role}
+                  type="button"
+                  onClick={() => {
+                    onChange(role);
+                    setIsOpen(false);
+                  }}
+                  className={`w-full text-left px-[10px] py-[4px] rounded transition-colors duration-100 font-['Inter'] font-normal text-[15px] leading-[22px] ${
+                    isSelected
+                      ? "bg-[#EEF1F5] text-[#162E55] font-medium"
+                      : "text-[#0E1726] hover:bg-slate-50 hover:text-[#162E55]"
+                  }`}
+                >
+                  {role}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -382,7 +467,6 @@ function RegistrationSuccess({
 
     ctx.fillStyle = "#FFFFFF";
     ctx.fillRect(0, 0, exportCanvas.width, exportCanvas.height);
-
     ctx.drawImage(originalCanvas, padding, padding);
 
     const url = exportCanvas.toDataURL("image/png");
@@ -393,71 +477,105 @@ function RegistrationSuccess({
   }
 
   return (
-    <>
-      <div className="bg-[#0f1e3d] text-white rounded-xl px-5 py-4 mb-4">
-        <div className="flex items-center gap-2">
-          <span className="bg-white/20 rounded-full w-6 h-6 flex items-center justify-center text-sm">
-            ✓
+    <div className="w-full flex flex-col gap-4 text-left">
+      {/* 1. Header Banner */}
+      <div className="w-full bg-[#162E55] text-white rounded-[24px] p-6 shadow-[0px_4px_16px_rgba(28,46,90,0.07)] flex items-center gap-4">
+        <div className="w-10 h-10 rounded-full border border-white/30 flex items-center justify-center shrink-0">
+          <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+          </svg>
+        </div>
+        <div className="flex flex-col">
+          <span className="font-sans font-semibold text-[10px] leading-[14px] tracking-[1px] text-white/60 uppercase">
+            Registration Complete
           </span>
-          <div>
-            <p className="text-[10px] uppercase tracking-wide text-slate-300">
-              Registration Complete
-            </p>
-            <h1 className="text-base font-semibold">
-              You&apos;re Registered, {attendee.firstName}!
-            </h1>
-          </div>
+          <h1 className="font-chillax font-bold text-[22px] leading-[28px] text-white mt-0.5">
+            You&apos;re Registered, <br />
+            {attendee.firstName}!
+          </h1>
+          {attendee.email && (
+            <span className="font-sans font-normal text-[12px] leading-[18px] text-white/50 mt-1">
+              {attendee.email}
+            </span>
+          )}
         </div>
       </div>
 
-      <div className="bg-white rounded-xl border border-slate-200 p-6 text-center mb-4">
-        <p className="text-[11px] uppercase tracking-wide text-slate-400 mb-3">
+      {/* 2. QR Code Pass Card */}
+      <div className="w-full bg-white rounded-[24px] p-8 shadow-[0px_1px_3px_rgba(28,46,90,0.05),0px_4px_16px_rgba(28,46,90,0.07)] border border-[rgba(28,46,90,0.1)] flex flex-col items-center text-center">
+        <span className="font-sans font-semibold text-[10px] leading-[15px] tracking-[1px] text-[#6B7590] uppercase mb-6">
           Your Entry Pass
-        </p>
-        <div ref={canvasWrapperRef} className="flex justify-center mb-3">
+        </span>
+
+        <div ref={canvasWrapperRef} className="p-3 bg-white rounded-2xl shadow-sm border border-slate-100 mb-5">
           <QRCodeCanvas
             value={attendee.qrToken}
             size={200}
             bgColor="#FFFFFF"
             fgColor="#000000"
-            level="M"
-            marginSize={2}
+            level="H"
+            marginSize={4}
           />
         </div>
-        <p className="text-xs text-slate-500 font-mono">{attendee.qrToken}</p>
-        <p className="text-[11px] text-slate-400 mt-1">
+
+        <span className="font-mono font-medium text-[13px] leading-[18px] text-[#6B7590] tracking-wider uppercase mb-1">
+          {attendee.qrToken}
+        </span>
+        <span className="font-sans font-normal text-[12px] leading-[16px] text-[#A0AEC0]">
           Present at event entrance for check-in
-        </p>
+        </span>
       </div>
 
-      <div className="bg-white rounded-xl border border-slate-200 p-5 mb-4 space-y-2 text-sm">
-        <Row label="Name" value={`${attendee.firstName} ${attendee.lastName}`} />
-        <Row label="Event Dates" value="9–11 November 2026" />
-        <Row label="Location" value="Harare, Zimbabwe" />
+      {/* 3. Registration Details Card */}
+      <div className="w-full bg-white rounded-[24px] p-6 shadow-[0px_1px_3px_rgba(28,46,90,0.05),0px_4px_16px_rgba(28,46,90,0.07)] border border-[rgba(28,46,90,0.1)] flex flex-col gap-4">
+        <span className="font-sans font-semibold text-[10px] leading-[15px] tracking-[1px] text-[#6B7590] uppercase">
+          Registration Details
+        </span>
+
+        <div className="flex flex-col gap-3">
+          <DetailRow label="Name" value={`${attendee.firstName} ${attendee.lastName}`} />
+          <DetailRow label="Organisation" value={attendee.organizationName || "—"} />
+          <DetailRow label="Role" value={attendee.role || "—"} />
+          <DetailRow label="Email" value={attendee.email || "—"} />
+          <DetailRow label="Event Dates" value="9–11 March 2026" />
+          <DetailRow label="Location" value="Harare, Zimbabwe" />
+        </div>
       </div>
 
+      {/* 4. Download Button */}
       <button
         onClick={handleDownload}
-        className="w-full bg-[#0f1e3d] text-white rounded-lg py-2.5 text-sm font-medium hover:bg-[#16295c] transition mb-3"
+        className="w-full h-[52px] bg-[#162E55] text-white rounded-[16px] font-chillax font-semibold text-[15px] leading-[22px] transition duration-150 flex items-center justify-center gap-2 shadow-[0px_4px_20px_rgba(28,46,90,0.25)] hover:bg-[#0f213f]"
       >
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+        </svg>
         Download QR Code
       </button>
 
+      {/* 5. Register Another Link */}
       <button
         onClick={onRegisterAnother}
-        className="w-full border border-slate-200 text-slate-600 rounded-lg py-2.5 text-sm font-medium hover:bg-slate-50 transition"
+        className="w-full py-2 text-center font-sans font-medium text-[13px] leading-[18px] text-[#6B7590] hover:text-[#162E55] transition flex items-center justify-center gap-1.5"
       >
-        Register Another Attendee
+        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+        </svg>
+        Register another attendee
       </button>
-    </>
+    </div>
   );
 }
 
-function Row({ label, value }: { label: string; value: string }) {
+function DetailRow({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex justify-between border-b border-slate-100 pb-2 last:border-0">
-      <span className="text-slate-400">{label}</span>
-      <span className="text-slate-800 font-medium">{value}</span>
+    <div className="flex justify-between items-center py-1 border-b border-slate-100 last:border-0 last:pb-0">
+      <span className="font-sans font-normal text-[13px] leading-[18px] text-[#6B7590]">
+        {label}
+      </span>
+      <span className="font-sans font-medium text-[13px] leading-[18px] text-[#0E1726] text-right">
+        {value}
+      </span>
     </div>
   );
 }

@@ -3,6 +3,14 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { createBrowserSupabaseClient } from "@/app/lib/superbase/browser";
+import {
+  UserPlus,
+  ScanLine,
+  Calendar,
+  Globe,
+  LayoutGrid,
+  FileText,
+} from "lucide-react";
 
 type Photo = {
   id: string;
@@ -111,27 +119,6 @@ export default function AdminDocumentationPage() {
     await loadPosts();
   }
 
-  function SidebarLink({
-  label,
-  href,
-  active = false,
-}: {
-  label: string;
-  href: string;
-  active?: boolean;
-}) {
-  return (
-    <Link
-      href={href}
-      className={`block px-3 py-2 rounded-lg text-sm font-medium ${
-        active ? "bg-[#0f1e3d] text-white" : "text-slate-500 hover:bg-slate-50"
-      }`}
-    >
-      {label}
-    </Link>
-  );
-}
-
   async function handlePhotoUpload(postId: string, file: File) {
     setError(null);
     setUploadingFor(postId);
@@ -177,10 +164,6 @@ export default function AdminDocumentationPage() {
       return;
     }
 
-    // Best-effort: also remove the underlying file from Storage.
-    // If this fails, the DB row is already gone (which is what the
-    // public page reads from), so no user-visible harm — just an
-    // orphaned file in the bucket, safe to ignore for now.
     await supabase.storage.from("photos").remove([photo.storage_path]);
 
     setDeletingId(null);
@@ -205,9 +188,6 @@ export default function AdminDocumentationPage() {
       return;
     }
 
-    // documentation_photos rows are removed automatically via
-    // ON DELETE CASCADE on the foreign key — but the actual files
-    // in Storage are not, so clean those up too.
     if (post && post.photos.length > 0) {
       await supabase.storage.from("photos").remove(post.photos.map((p) => p.storage_path));
     }
@@ -217,123 +197,168 @@ export default function AdminDocumentationPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 px-4 py-6 sm:px-8 sm:py-10 max-w-xl mx-auto">
-      <div className="bg-[#0f1e3d] text-white rounded-xl px-5 py-4 mb-6">
-        <h1 className="text-lg font-semibold">Manage Documentation</h1>
-        <p className="text-sm text-slate-300 mt-0.5">Publish daily event notes and photos</p>
-      </div>
-
-      <nav className="px-3 py-4 space-y-1">
-  <SidebarLink label="Check In" href="/admin/check-in" />
-  <SidebarLink label="Attendance" href="/admin/attendance" />
-  <SidebarLink label="Documentation" href="/admin/documentation" />
-  <SidebarLink label="Partners" href="/admin/partners" />
-</nav>
-
-      {error && (
-        <div className="bg-red-50 text-red-700 text-sm rounded-lg px-4 py-3 mb-4">{error}</div>
-      )}
-
-      <form onSubmit={handleCreate} className="bg-white rounded-xl border border-slate-200 p-4 mb-6 space-y-3">
-        <h2 className="text-sm font-semibold text-slate-800">New Post</h2>
-
-        <select
-          value={form.event_date}
-          onChange={(e) => setForm((f) => ({ ...f, event_date: e.target.value }))}
-          className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
-        >
-          {EVENT_DATES.map((d, i) => (
-            <option key={d} value={d}>
-              Day {i + 1} — {d}
-            </option>
-          ))}
-        </select>
-
-        <input
-          required
-          placeholder="Title"
-          value={form.title}
-          onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
-          className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
-        />
-
-        <textarea
-          required
-          placeholder="Notes / summary"
-          rows={4}
-          value={form.content}
-          onChange={(e) => setForm((f) => ({ ...f, content: e.target.value }))}
-          className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
-        />
-
-        <button
-          type="submit"
-          disabled={saving}
-          className="w-full bg-[#0f1e3d] text-white rounded-lg py-2.5 text-sm font-medium disabled:opacity-50"
-        >
-          {saving ? "Publishing…" : "Publish Post"}
-        </button>
-      </form>
-
-      {loading ? (
-        <p className="text-sm text-slate-400">Loading…</p>
-      ) : (
-        <div className="space-y-4">
-          {posts.map((post) => (
-            <div key={post.id} className="bg-white rounded-xl border border-slate-200 p-4">
-              <div className="flex items-start justify-between gap-2">
-                <div>
-                  <p className="text-[11px] text-slate-400">{post.event_date}</p>
-                  <p className="text-sm font-semibold text-slate-800">{post.title}</p>
-                </div>
-                <button
-                  onClick={() => handleDeletePost(post.id)}
-                  disabled={deletingId === post.id}
-                  className="text-xs text-red-500 hover:text-red-700 flex-shrink-0"
-                >
-                  {deletingId === post.id ? "Deleting…" : "Delete post"}
-                </button>
-              </div>
-
-              {post.photos.length > 0 && (
-                <div className="grid grid-cols-4 gap-2 mt-3">
-                  {post.photos.map((photo) => (
-                    <div key={photo.id} className="relative group">
-                      <img
-                        src={photo.photoUrl}
-                        alt=""
-                        className="w-full aspect-square object-cover rounded-md"
-                      />
-                      <button
-                        onClick={() => handleDeletePhoto(photo)}
-                        disabled={deletingId === photo.id}
-                        className="absolute top-1 right-1 bg-black/60 text-white rounded-full w-5 h-5 text-[10px] flex items-center justify-center hover:bg-red-600"
-                        title="Delete photo"
-                      >
-                        {deletingId === photo.id ? "…" : "✕"}
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              <PhotoDropzone
-                postId={post.id}
-                uploading={uploadingFor === post.id}
-                onUpload={handlePhotoUpload}
-              />
+    <div className="min-h-screen bg-slate-50 flex">
+      <aside className="hidden md:flex w-56 flex-col justify-between border-r border-slate-200 bg-white">
+        <div>
+          <div className="px-5 pt-6 pb-4 border-b border-slate-100">
+            <div className="text-lg font-bold text-slate-900 tracking-tight">
+              OAK <span className="font-normal text-slate-400">FOUNDATION</span>
             </div>
-          ))}
+            <div className="text-[11px] uppercase tracking-wide text-slate-400 mt-1">
+              Partner Convening 2026
+            </div>
+          </div>
+          <nav className="px-3 py-4 space-y-1">
+            <SidebarLink icon={UserPlus} label="Register" href="/register" />
+            <SidebarLink icon={ScanLine} label="Check In" href="/admin/check-in" />
+            <SidebarLink icon={Calendar} label="Programme" href="/programme" />
+            <SidebarLink icon={Globe} label="Partners" href="/partners" />
+            <SidebarLink icon={LayoutGrid} label="Attendance" href="/admin/attendance" />
+            <SidebarLink icon={FileText} label="Documentation" href="/admin/documentation" active />
+          </nav>
         </div>
-      )}
+        <div className="px-5 py-4 text-xs text-slate-400 border-t border-slate-100">
+          Harare, Zimbabwe
+          <br />
+          9–11 March 2026
+        </div>
+      </aside>
 
-      <Link
-        href="/documentation"
-        className="block text-center mt-6 border border-slate-200 text-slate-500 rounded-lg py-2 text-xs font-medium hover:bg-white transition"
-      >
-        View Public Documentation
-      </Link>
+      <main className="flex-1 px-4 py-6 sm:px-8 sm:py-10 max-w-xl mx-auto w-full">
+        <div className="bg-[#0f1e3d] text-white rounded-xl px-5 py-4 mb-6">
+          <h1 className="text-lg font-semibold">Manage Documentation</h1>
+          <p className="text-sm text-slate-300 mt-0.5">Publish daily event notes and photos</p>
+        </div>
+
+        {error && (
+          <div className="bg-red-50 text-red-700 text-sm rounded-lg px-4 py-3 mb-4">{error}</div>
+        )}
+
+        <form onSubmit={handleCreate} className="bg-white rounded-xl border border-slate-200 p-4 mb-6 space-y-3">
+          <h2 className="text-sm font-semibold text-slate-800">New Post</h2>
+
+          <select
+            value={form.event_date}
+            onChange={(e) => setForm((f) => ({ ...f, event_date: e.target.value }))}
+            className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
+          >
+            {EVENT_DATES.map((d, i) => (
+              <option key={d} value={d}>
+                Day {i + 1} — {d}
+              </option>
+            ))}
+          </select>
+
+          <input
+            required
+            placeholder="Title"
+            value={form.title}
+            onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
+            className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
+          />
+
+          <textarea
+            required
+            placeholder="Notes / summary"
+            rows={4}
+            value={form.content}
+            onChange={(e) => setForm((f) => ({ ...f, content: e.target.value }))}
+            className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
+          />
+
+          <button
+            type="submit"
+            disabled={saving}
+            className="w-full bg-[#0f1e3d] text-white rounded-lg py-2.5 text-sm font-medium disabled:opacity-50"
+          >
+            {saving ? "Publishing…" : "Publish Post"}
+          </button>
+        </form>
+
+        {loading ? (
+          <p className="text-sm text-slate-400">Loading…</p>
+        ) : (
+          <div className="space-y-4">
+            {posts.map((post) => (
+              <div key={post.id} className="bg-white rounded-xl border border-slate-200 p-4">
+                <div className="flex items-start justify-between gap-2">
+                  <div>
+                    <p className="text-[11px] text-slate-400">{post.event_date}</p>
+                    <p className="text-sm font-semibold text-slate-800">{post.title}</p>
+                  </div>
+                  <button
+                    onClick={() => handleDeletePost(post.id)}
+                    disabled={deletingId === post.id}
+                    className="text-xs text-red-500 hover:text-red-700 flex-shrink-0"
+                  >
+                    {deletingId === post.id ? "Deleting…" : "Delete post"}
+                  </button>
+                </div>
+
+                {post.photos.length > 0 && (
+                  <div className="grid grid-cols-4 gap-2 mt-3">
+                    {post.photos.map((photo) => (
+                      <div key={photo.id} className="relative group">
+                        <img
+                          src={photo.photoUrl}
+                          alt=""
+                          className="w-full aspect-square object-cover rounded-md"
+                        />
+                        <button
+                          onClick={() => handleDeletePhoto(photo)}
+                          disabled={deletingId === photo.id}
+                          className="absolute top-1 right-1 bg-black/60 text-white rounded-full w-5 h-5 text-[10px] flex items-center justify-center hover:bg-red-600"
+                          title="Delete photo"
+                        >
+                          {deletingId === photo.id ? "…" : "✕"}
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                <PhotoDropzone
+                  postId={post.id}
+                  uploading={uploadingFor === post.id}
+                  onUpload={handlePhotoUpload}
+                />
+              </div>
+            ))}
+          </div>
+        )}
+
+        <Link
+          href="/documentation"
+          className="block text-center mt-6 border border-slate-200 text-slate-500 rounded-lg py-2 text-xs font-medium hover:bg-white transition"
+        >
+          View Public Documentation
+        </Link>
+      </main>
     </div>
+  );
+}
+
+function SidebarLink({
+  icon: Icon,
+  label,
+  href,
+  active = false,
+}: {
+  icon: React.ComponentType<{ size?: number; strokeWidth?: number }>;
+  label: string;
+  href: string;
+  active?: boolean;
+}) {
+  return (
+    <Link
+      href={href}
+      className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-semibold transition ${
+        active ? "bg-[#0f1e3d] text-white" : "text-slate-500 hover:bg-slate-50"
+      }`}
+    >
+      <Icon size={18} strokeWidth={2} />
+      {label}
+    </Link>
   );
 }
 

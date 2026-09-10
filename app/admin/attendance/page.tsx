@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { ScanLine, Users, RefreshCw } from "lucide-react";
+import AppSidebar from "@/app/components/AppSidebar";
 
 type Summary = {
   event_date: string;
@@ -39,29 +41,7 @@ export default function AttendancePage() {
 
   return (
     <div className="min-h-screen bg-slate-50 flex">
-      <aside className="hidden md:flex w-56 flex-col justify-between border-r border-slate-200 bg-white">
-        <div>
-          <div className="px-5 pt-6 pb-4 border-b border-slate-100">
-            <div className="text-lg font-bold text-slate-900 tracking-tight">
-              OAK <span className="font-normal text-slate-400">FOUNDATION</span>
-            </div>
-            <div className="text-[11px] uppercase tracking-wide text-slate-400 mt-1">
-              Partner Convening 2026
-            </div>
-          </div>
-<nav className="px-3 py-4 space-y-1">
-  <SidebarLink label="Check In" href="/admin/check-in" />
-  <SidebarLink label="Attendance" href="/admin/attendance" />
-  <SidebarLink label="Documentation" href="/admin/documentation" />
-  <SidebarLink label="Partners" href="/admin/partners" />
-</nav>
-        </div>
-        <div className="px-5 py-4 text-xs text-slate-400 border-t border-slate-100">
-          Harare, Zimbabwe
-          <br />
-          9–11 November 2026
-        </div>
-      </aside>
+      <AppSidebar />
 
       <main className="flex-1 px-4 py-6 sm:px-8 sm:py-10 max-w-xl mx-auto w-full">
         <div className="bg-[#0f1e3d] text-white rounded-xl px-5 py-4 mb-6">
@@ -81,12 +61,12 @@ export default function AttendancePage() {
           {loading ? (
             <p className="text-sm text-slate-400 py-6">Loading…</p>
           ) : summary && summary.checked_in > 0 ? (
-            <div className="text-left">
+            <div className="text-left py-2">
               <p className="text-sm font-medium text-slate-700 mb-2">
                 {summary.checked_in} of {summary.total_registered} attendees
                 checked in
               </p>
-              <div className="w-full bg-slate-100 rounded-full h-2 mb-1">
+              <div className="w-full bg-slate-100 rounded-full h-2 mb-4">
                 <div
                   className="bg-[#0f1e3d] h-2 rounded-full transition-all"
                   style={{
@@ -101,13 +81,13 @@ export default function AttendancePage() {
             </div>
           ) : (
             <>
-              <div className="w-10 h-10 mx-auto mb-3 rounded-full bg-slate-100 flex items-center justify-center text-slate-400">
-                ⛬
+              <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-slate-100 flex items-center justify-center text-slate-300">
+                <Users size={26} strokeWidth={1.75} />
               </div>
-              <p className="text-sm font-semibold text-slate-700">
+              <p className="text-base font-semibold text-slate-800">
                 No check-ins yet
               </p>
-              <p className="text-xs text-slate-400 mt-1 mb-4">
+              <p className="text-sm text-slate-400 mt-1 mb-5 max-w-xs mx-auto">
                 Attendees will appear here once they have been scanned in at
                 the event entrance.
               </p>
@@ -116,24 +96,31 @@ export default function AttendancePage() {
 
           <Link
             href="/admin/check-in"
-            className="mt-4 inline-block w-full bg-[#0f1e3d] text-white rounded-lg py-2.5 text-sm font-medium hover:bg-[#16295c] transition"
+            className="inline-flex items-center justify-center gap-2 w-full bg-[#0f1e3d] text-white rounded-xl py-3 text-sm font-semibold hover:bg-[#16295c] transition"
           >
+            <ScanLine size={16} />
             Go to Check-In Scanner
           </Link>
         </div>
 
         {summary && (
-          <div className="grid grid-cols-3 gap-2">
-            <StatCard value={summary.total_registered} label="Expected" />
-            <StatCard value={summary.checked_in} label="Checked In" />
-            <StatCard value={summary.pending} label="Pending" />
+          <div className="bg-white rounded-xl border border-slate-200 p-5">
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400 mb-3">
+              Event Overview
+            </p>
+            <div className="grid grid-cols-3 gap-2">
+              <StatCard value={summary.total_registered} label="Expected" />
+              <StatCard value={summary.checked_in} label="Checked In" />
+              <StatCard value={summary.pending} label="Pending" />
+            </div>
           </div>
         )}
 
         <button
           onClick={loadSummary}
-          className="w-full mt-4 border border-slate-200 text-slate-500 rounded-lg py-2 text-xs font-medium hover:bg-white transition"
+          className="flex items-center justify-center gap-1.5 w-full mt-4 border border-slate-200 text-slate-500 rounded-lg py-2 text-xs font-medium hover:bg-white transition"
         >
+          <RefreshCw size={13} />
           Refresh
         </button>
       </main>
@@ -141,32 +128,11 @@ export default function AttendancePage() {
   );
 }
 
-function SidebarLink({
-  label,
-  href,
-  active = false,
-}: {
-  label: string;
-  href: string;
-  active?: boolean;
-}) {
-  return (
-    <Link
-      href={href}
-      className={`block px-3 py-2 rounded-lg text-sm font-medium ${
-        active ? "bg-[#0f1e3d] text-white" : "text-slate-500 hover:bg-slate-50"
-      }`}
-    >
-      {label}
-    </Link>
-  );
-}
-
 function StatCard({ value, label }: { value: number; label: string }) {
   return (
-    <div className="bg-white rounded-lg border border-slate-200 py-3 text-center">
-      <div className="text-lg font-semibold text-slate-800">{value}</div>
-      <div className="text-[11px] text-slate-400 mt-0.5">{label}</div>
+    <div className="bg-slate-50 rounded-lg py-4 text-center">
+      <div className="text-2xl font-bold text-slate-900">{value}</div>
+      <div className="text-[11px] text-slate-400 mt-1">{label}</div>
     </div>
   );
 }

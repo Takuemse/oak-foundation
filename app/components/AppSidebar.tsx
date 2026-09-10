@@ -1,0 +1,77 @@
+"use client";
+
+import Link from "next/link";
+import Image from "next/image";
+import { usePathname } from "next/navigation";
+import { UserPlus, ScanLine, Calendar, Globe, LayoutGrid } from "lucide-react";
+
+const LINKS = [
+  { icon: UserPlus, label: "Register", href: "/register", exact: true },
+  { icon: ScanLine, label: "Check In", href: "/admin/check-in", exact: true },
+  { icon: Calendar, label: "Programme", href: "/programme", exact: true },
+  { icon: Globe, label: "Partners", href: "/partners", exact: false },
+  { icon: LayoutGrid, label: "Attendance", href: "/admin/attendance", exact: true },
+];
+
+export default function AppSidebar() {
+  const pathname = usePathname();
+
+  return (
+    <aside className="hidden md:flex w-[256px] min-h-screen flex-col justify-between bg-white border-r border-[rgba(28,46,90,0.1)] flex-shrink-0 z-10">
+      <div>
+        {/* Top Header Section (255px x 130px) */}
+        <div className="p-6 border-b border-[rgba(28,46,90,0.1)] flex flex-col justify-between">
+          <Image
+            src="/Logo-Oak-Foundation.svg.svg"
+            alt="Oak Foundation Logo"
+            width={85}
+            height={53}
+            priority
+            className="w-[85px] h-[53px] object-contain"
+          />
+          <div className="pt-3">
+            <span className="font-sans font-semibold text-[12px] leading-[16px] tracking-[1.2px] text-[#6B7590] uppercase block">
+              Partner Convening 2026
+            </span>
+          </div>
+        </div>
+
+        {/* Navigation Section */}
+        <nav className="p-4 flex flex-col gap-1">
+          {LINKS.map(({ icon: Icon, label, href, exact }) => {
+            const active = exact ? pathname === href : pathname.startsWith(href);
+            return (
+              <Link
+                key={href}
+                href={href}
+                className={`flex items-center gap-3 px-4 py-3 rounded-[16px] transition duration-150 ${
+                  active
+                    ? "bg-[#162E55] text-white shadow-[0px_4px_20px_rgba(28,46,90,0.3)] font-semibold text-[14px] leading-[20px]"
+                    : "text-[#6B7590] hover:bg-[#EEF1F5] hover:text-[#0E1726] font-medium text-[14px] leading-[20px]"
+                }`}
+              >
+                <Icon className="w-[18px] h-[18px]" strokeWidth={2} />
+                <span>{label}</span>
+              </Link>
+            );
+          })}
+        </nav>
+      </div>
+
+      {/* Footer Location Block (255px x 73px) */}
+      <div className="p-[20px] border-t border-[rgba(28,46,90,0.1)] flex items-center gap-2.5">
+        <div className="w-[32px] h-[32px] rounded-[12px] bg-[#EEF1F5] flex items-center justify-center flex-shrink-0">
+          <Globe className="w-[14px] h-[14px] text-[#A8BBCE]" />
+        </div>
+        <div className="flex flex-col">
+          <span className="font-sans font-semibold text-[12px] leading-[16px] text-[#0E1726]">
+            Harare, Zimbabwe
+          </span>
+          <span className="font-sans font-normal text-[10px] leading-[15px] text-[#6B7590]">
+            9–11 March 2026
+          </span>
+        </div>
+      </div>
+    </aside>
+  );
+}

@@ -20,7 +20,9 @@ export async function GET() {
 
     const { data: sessions, error: sessionsError } = await supabase
       .from("programme_sessions")
-      .select("id, programme_day_id, title, description, start_time, end_time, location, display_order")
+      .select(
+        "id, programme_day_id, title, description, start_time, end_time, location, display_order, category, presenter_name, presenter_org, is_featured"
+      )
       .order("display_order", { ascending: true });
 
     if (sessionsError) {

@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import AppSidebar from "@/app/components/AppSidebar";
 
 type Org = {
   id: string;
@@ -45,29 +46,7 @@ export default function PartnersPage() {
 
   return (
     <div className="min-h-screen bg-slate-50 flex">
-      <aside className="hidden md:flex w-56 flex-col justify-between border-r border-slate-200 bg-white">
-        <div>
-          <div className="px-5 pt-6 pb-4 border-b border-slate-100">
-            <div className="text-lg font-bold text-slate-900 tracking-tight">
-              OAK <span className="font-normal text-slate-400">FOUNDATION</span>
-            </div>
-            <div className="text-[11px] uppercase tracking-wide text-slate-400 mt-1">
-              Partner Convening 2026
-            </div>
-          </div>
-          <nav className="px-3 py-4 space-y-1">
-            <SidebarLink label="Register" href="/register" />
-            <SidebarLink label="Programme" href="/programme" />
-            <SidebarLink label="Partners" href="/partners" active />
-            <SidebarLink label="Documentation" href="/documentation" />
-          </nav>
-        </div>
-        <div className="px-5 py-4 text-xs text-slate-400 border-t border-slate-100">
-          Harare, Zimbabwe
-          <br />
-          9–11 November 2026
-        </div>
-      </aside>
+      <AppSidebar />
 
       <main className="flex-1 px-4 py-6 sm:px-8 sm:py-10 max-w-xl mx-auto w-full">
         <h1 className="text-xl font-bold text-slate-900 mb-0.5">Partner Directory</h1>
@@ -99,10 +78,9 @@ export default function PartnersPage() {
           <div className="space-y-3">
             {filtered.map((org) => (
               
-            <a    key={org.id}
-                href={org.website_url ?? "#"}
-                target="_blank"
-                rel="noopener noreferrer"
+            <Link
+              key={org.id}
+              href={`/partners/${org.id}`}
                 className="block bg-white rounded-xl border border-slate-200 p-4 hover:border-slate-300 transition"
               >
                 <div className="flex items-center gap-3">
@@ -133,7 +111,7 @@ export default function PartnersPage() {
                     )}
                   </div>
                 </div>
-              </a>
+              </Link>
             ))}
           </div>
         )}
@@ -146,27 +124,6 @@ export default function PartnersPage() {
         </Link>
       </main>
     </div>
-  );
-}
-
-function SidebarLink({
-  label,
-  href,
-  active = false,
-}: {
-  label: string;
-  href: string;
-  active?: boolean;
-}) {
-  return (
-    <Link
-      href={href}
-      className={`block px-3 py-2 rounded-lg text-sm font-medium ${
-        active ? "bg-[#0f1e3d] text-white" : "text-slate-500 hover:bg-slate-50"
-      }`}
-    >
-      {label}
-    </Link>
   );
 }
 
