@@ -125,7 +125,7 @@ export default function RegisterPage() {
           />
         </div>
         <div className="w-[1px] h-[20px] bg-white/20 shrink-0" />
-        <span className="font-['Avenir_Next_LT_Pro',sans-serif] font-semibold text-[12px] leading-[16px] tracking-[1.2px] uppercase text-white/70 truncate">
+        <span className="font-['Inter',sans-serif] font-semibold text-[12px] leading-[16px] tracking-[0.3px] uppercase text-white/70 truncate">
           Partner Convening 2026
         </span>
       </header>
@@ -147,12 +147,12 @@ export default function RegisterPage() {
               />
 
               <div className="relative z-10 flex flex-col justify-between h-full">
-                <h1 className="font-['Chillax',sans-serif] font-bold text-[30px] leading-[38px] text-white pt-1">
+                <h1 className="font-['Chillax',sans-serif] font-bold text-[30px] leading-[37.5px] tracking-[0px] text-white pt-1">
                   Partner <br />
                   Convening 2026
                 </h1>
 
-                <p className="font-['Avenir_Next_LT_Pro',sans-serif] font-normal text-[14px] leading-[20px] text-white/50">
+                <p className="font-['Inter',sans-serif] font-normal text-[14px] leading-[20px] tracking-[0px] text-white/50">
                   Geneva · 9–11 March 2026
                 </p>
               </div>
@@ -200,7 +200,7 @@ export default function RegisterPage() {
               onSubmit={handleSubmit}
               className="w-full bg-white rounded-[24px] p-5 shadow-[0px_1px_3px_rgba(28,46,90,0.05),0px_4px_16px_rgba(28,46,90,0.07)] border border-[rgba(28,46,90,0.1)] flex flex-col gap-4 text-left"
             >
-              <h2 className="font-['Chillax',sans-serif] font-semibold text-[18px] leading-[28px] text-[#0E1726]">
+              <h2 className="font-['Chillax',sans-serif] font-semibold text-[18px] leading-[28px] tracking-[0px] text-[#0E1726]">
                 Registration Form
               </h2>
 
@@ -274,7 +274,7 @@ export default function RegisterPage() {
 
               {/* Requirements Group */}
               <div className="bg-[#EEF1F5] rounded-[16px] p-4 border border-[rgba(28,46,90,0.1)] flex flex-col gap-3">
-                <span className="font-['Chillax',sans-serif] font-semibold text-[10px] leading-[15px] tracking-[1px] text-[#6B7590] uppercase">
+                <span className="font-['Inter',sans-serif] font-semibold text-[12px] leading-[16px] tracking-[0.3px] text-[#6B7590] uppercase">
                   Requirements
                 </span>
 
@@ -314,9 +314,9 @@ export default function RegisterPage() {
                   onChange={(e) => update("consentGiven", e.target.checked)}
                   className="mt-1 w-[20px] h-[20px] rounded-[6px] border border-[rgba(28,46,90,0.18)] text-[#162E55] focus:ring-[#162E55] accent-[#162E55] shrink-0"
                 />
-                <span className="font-['Avenir_Next_LT_Pro',sans-serif] font-normal text-[14px] leading-[23px] text-[#0E1726]">
+                <span className="font-['Inter',sans-serif] font-normal text-[14px] leading-[22.75px] tracking-[0px] text-[#0E1726]">
                   I agree to OAK Foundation&apos;s{" "}
-                  <a href="#" className="underline font-medium hover:text-[#162E55]">
+                  <a href="#" className="font-['Inter',sans-serif] font-normal text-[14px] leading-[22.75px] tracking-[0px] underline decoration-solid decoration-[0%] underline-offset-[0%] text-[#0E1726] hover:text-[#162E55]">
                     privacy policy
                   </a>{" "}
                   and consent to my registration data being used for event coordination.
@@ -327,7 +327,7 @@ export default function RegisterPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full h-[56px] text-white rounded-[16px] font-['Chillax',sans-serif] font-semibold text-[16px] leading-[24px] transition duration-150 disabled:opacity-50 flex items-center justify-center shadow-[0px_4px_20px_rgba(28,46,90,0.3)] hover:opacity-95"
+                className="w-full h-[56px] text-white rounded-[16px] font-['Chillax',sans-serif] font-semibold text-[16px] leading-[24px] tracking-[0px] text-center transition duration-150 disabled:opacity-50 flex items-center justify-center shadow-[0px_4px_20px_rgba(28,46,90,0.3)] hover:opacity-95"
                 style={{
                   background: "linear-gradient(135deg, #1C2E5A 0%, #2D4A82 100%)",
                 }}
@@ -337,7 +337,7 @@ export default function RegisterPage() {
             </form>
 
             <footer className="w-full py-4 flex flex-col items-center">
-              <p className="font-['Avenir_Next_LT_Pro',sans-serif] font-normal text-[12px] leading-[16px] text-center text-[#6B7590] max-w-[371px]">
+              <p className="font-['Inter',sans-serif] font-normal text-[12px] leading-[16px] tracking-[0px] text-center text-[#6B7590] max-w-[371px]">
                 Your data is secured and handled by OAK Foundation in accordance with GDPR.
               </p>
             </footer>
@@ -349,10 +349,10 @@ export default function RegisterPage() {
 }
 
 const inputClass =
-  "w-full h-[52.5px] rounded-[14px] bg-[#EEF1F5] px-4 text-[15px] font-['Avenir_Next_LT_Pro',sans-serif] text-[#0E1726] placeholder-[#6B7590] focus:outline-none focus:ring-2 focus:ring-[#162E55]/20 transition border-0";
+  "w-full h-[52.5px] rounded-[14px] bg-[#EEF1F5] px-4 font-['Inter',sans-serif] font-normal text-[15px] leading-[100%] tracking-[0px] text-[#0E1726] placeholder-[#6B7590] focus:outline-none focus:ring-2 focus:ring-[#162E55]/20 transition border-0";
 
 const inputClassWhite =
-  "w-full h-[52.5px] rounded-[14px] bg-white px-4 text-[15px] font-['Avenir_Next_LT_Pro',sans-serif] text-[#0E1726] placeholder-[#6B7590] focus:outline-none focus:ring-2 focus:ring-[#162E55]/20 transition border-0";
+  "w-full h-[52.5px] rounded-[14px] bg-white px-4 font-['Inter',sans-serif] font-normal text-[15px] leading-[100%] tracking-[0px] text-[#0E1726] placeholder-[#6B7590] focus:outline-none focus:ring-2 focus:ring-[#162E55]/20 transition border-0";
 
 function Field({
   label,
@@ -365,7 +365,7 @@ function Field({
 }) {
   return (
     <div className="flex flex-col gap-[6px] w-full">
-      <div className="flex items-center gap-1 font-['Avenir_Next_LT_Pro',sans-serif] font-semibold text-[12px] leading-[16px] tracking-[0.3px] text-[#6B7590] uppercase">
+      <div className="flex items-center gap-1 font-['Inter',sans-serif] font-semibold text-[12px] leading-[16px] tracking-[0.3px] text-[#6B7590] uppercase">
         <span>{label}</span>
         {required && <span className="text-[#FB2C36] font-['Inter',sans-serif]">*</span>}
       </div>
@@ -379,8 +379,12 @@ function StatCard({ value, label, icon }: { value: string; label: string; icon?:
     <div className="bg-white rounded-[24px] p-4 h-full shadow-[0px_1px_3px_rgba(28,46,90,0.05),0px_4px_16px_rgba(28,46,90,0.07)] flex flex-col justify-between text-left border border-[rgba(28,46,90,0.1)]">
       <div>{icon}</div>
       <div>
-        <div className="font-['Chillax',sans-serif] text-[20px] font-bold text-[#0E1726] leading-[20px]">{value}</div>
-        <div className="font-['Avenir_Next_LT_Pro',sans-serif] text-[12px] text-[#6B7590] font-normal leading-[16px] mt-1">{label}</div>
+        <div className="font-['Chillax',sans-serif] font-bold text-[20px] leading-[20px] tracking-[0px] text-[#0E1726]">
+          {value}
+        </div>
+        <div className="font-['Inter',sans-serif] font-normal text-[12px] leading-[16px] tracking-[0px] text-[#6B7590] mt-1">
+          {label}
+        </div>
       </div>
     </div>
   );
@@ -432,7 +436,7 @@ function CustomRoleDropdown({
       {isOpen && (
         <div className="absolute left-0 top-full mt-2 w-full bg-white rounded-[15px] p-3.5 shadow-[0px_3px_12px_rgba(0,0,0,0.15)] border border-slate-100 z-50 flex flex-col gap-1.5 animate-in fade-in duration-100">
           <div className="w-full h-[30px] px-[10px] py-[3px] bg-[#162E55] rounded-[5px] flex items-center shrink-0">
-            <span className="font-['Avenir_Next_LT_Pro',sans-serif] font-normal text-[15px] leading-[22px] text-white">
+            <span className="font-['Inter',sans-serif] font-normal text-[15px] leading-[22px] text-white">
               Select your role
             </span>
           </div>
@@ -448,7 +452,7 @@ function CustomRoleDropdown({
                     onChange(role);
                     setIsOpen(false);
                   }}
-                  className={`w-full text-left px-[10px] py-[4px] rounded transition-colors duration-100 font-['Avenir_Next_LT_Pro',sans-serif] font-normal text-[15px] leading-[22px] ${
+                  className={`w-full text-left px-[10px] py-[4px] rounded transition-colors duration-100 font-['Inter',sans-serif] font-normal text-[15px] leading-[22px] ${
                     isSelected
                       ? "bg-[#EEF1F5] text-[#162E55] font-medium"
                       : "text-[#0E1726] hover:bg-slate-50 hover:text-[#162E55]"
@@ -506,7 +510,7 @@ function RegistrationSuccess({
           </svg>
         </div>
         <div className="flex flex-col">
-          <span className="font-['Chillax',sans-serif] font-semibold text-[10px] leading-[14px] tracking-[1px] text-white/60 uppercase">
+          <span className="font-['Inter',sans-serif] font-semibold text-[12px] leading-[16px] tracking-[0.3px] text-white/60 uppercase">
             Registration Complete
           </span>
           <h1 className="font-['Chillax',sans-serif] font-bold text-[22px] leading-[28px] text-white mt-0.5">
@@ -514,7 +518,7 @@ function RegistrationSuccess({
             {attendee.firstName}!
           </h1>
           {attendee.email && (
-            <span className="font-['Avenir_Next_LT_Pro',sans-serif] font-normal text-[12px] leading-[18px] text-white/50 mt-1">
+            <span className="font-['Inter',sans-serif] font-normal text-[12px] leading-[18px] text-white/50 mt-1">
               {attendee.email}
             </span>
           )}
@@ -522,7 +526,7 @@ function RegistrationSuccess({
       </div>
 
       <div className="w-full bg-white rounded-[24px] p-8 shadow-[0px_1px_3px_rgba(28,46,90,0.05),0px_4px_16px_rgba(28,46,90,0.07)] border border-[rgba(28,46,90,0.1)] flex flex-col items-center text-center">
-        <span className="font-['Chillax',sans-serif] font-semibold text-[10px] leading-[15px] tracking-[1px] text-[#6B7590] uppercase mb-6">
+        <span className="font-['Inter',sans-serif] font-semibold text-[12px] leading-[16px] tracking-[0.3px] text-[#6B7590] uppercase mb-6">
           Your Entry Pass
         </span>
 
@@ -540,13 +544,13 @@ function RegistrationSuccess({
         <span className="font-mono font-medium text-[13px] leading-[18px] text-[#6B7590] tracking-wider uppercase mb-1">
           {attendee.qrToken}
         </span>
-        <span className="font-['Avenir_Next_LT_Pro',sans-serif] font-normal text-[12px] leading-[16px] text-[#A0AEC0]">
+        <span className="font-['Inter',sans-serif] font-normal text-[12px] leading-[16px] text-[#A0AEC0]">
           Present at event entrance for check-in
         </span>
       </div>
 
       <div className="w-full bg-white rounded-[24px] p-6 shadow-[0px_1px_3px_rgba(28,46,90,0.05),0px_4px_16px_rgba(28,46,90,0.07)] border border-[rgba(28,46,90,0.1)] flex flex-col gap-4">
-        <span className="font-['Chillax',sans-serif] font-semibold text-[10px] leading-[15px] tracking-[1px] text-[#6B7590] uppercase">
+        <span className="font-['Inter',sans-serif] font-semibold text-[12px] leading-[16px] tracking-[0.3px] text-[#6B7590] uppercase">
           Registration Details
         </span>
 
@@ -573,7 +577,7 @@ function RegistrationSuccess({
 
       <button
         onClick={onRegisterAnother}
-        className="w-full py-2 text-center font-['Avenir_Next_LT_Pro',sans-serif] font-medium text-[13px] leading-[18px] text-[#6B7590] hover:text-[#162E55] transition flex items-center justify-center gap-1.5"
+        className="w-full py-2 text-center font-['Inter',sans-serif] font-medium text-[13px] leading-[18px] text-[#6B7590] hover:text-[#162E55] transition flex items-center justify-center gap-1.5"
       >
         <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
@@ -587,10 +591,10 @@ function RegistrationSuccess({
 function DetailRow({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex justify-between items-center py-1 border-b border-slate-100 last:border-0 last:pb-0">
-      <span className="font-['Avenir_Next_LT_Pro',sans-serif] font-normal text-[13px] leading-[18px] text-[#6B7590]">
+      <span className="font-['Inter',sans-serif] font-normal text-[13px] leading-[18px] text-[#6B7590]">
         {label}
       </span>
-      <span className="font-['Avenir_Next_LT_Pro',sans-serif] font-medium text-[13px] leading-[18px] text-[#0E1726] text-right">
+      <span className="font-['Inter',sans-serif] font-medium text-[13px] leading-[18px] text-[#0E1726] text-right">
         {value}
       </span>
     </div>
