@@ -35,6 +35,8 @@ export default function AdminDocumentationPage() {
   const [error, setError] = useState<string | null>(null);
   const [uploadingFor, setUploadingFor] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  // Bumped by mutation handlers to re-run the load effect below.
+  const [refreshKey, setRefreshKey] = useState(0);
 
   const [form, setForm] = useState({
     event_date: EVENT_DATES[0],
@@ -45,50 +47,48 @@ export default function AdminDocumentationPage() {
 
   const supabase = createBrowserSupabaseClient();
 
-  async function loadPosts() {
-    setLoading(true);
-    const { data: postRows, error: postErr } = await supabase
-      .from("documentation_posts")
-      .select("id, event_date, title, content, is_published")
-      .order("event_date", { ascending: true });
-
-    if (postErr) {
-      setError(postErr.message);
-      setLoading(false);
-      return;
-    }
-
-    const ids = (postRows ?? []).map((p) => p.id);
-    const { data: photoRows, error: photoErr } = await supabase
-      .from("documentation_photos")
-      .select("id, documentation_post_id, storage_path")
-      .in("documentation_post_id", ids.length > 0 ? ids : ["00000000-0000-0000-0000-000000000000"])
-      .order("display_order", { ascending: true });
-
-    if (photoErr) {
-      setError(photoErr.message);
-      setLoading(false);
-      return;
-    }
-
-    const withPhotos = (postRows ?? []).map((post) => ({
-      ...post,
-      photos: (photoRows ?? [])
-        .filter((ph) => ph.documentation_post_id === post.id)
-        .map((ph) => ({
-          id: ph.id,
-          storage_path: ph.storage_path,
-          photoUrl: supabase.storage.from("photos").getPublicUrl(ph.storage_path).data.publicUrl,
-        })),
-    }));
-
-    setPosts(withPhotos);
-    setLoading(false);
-  }
-
   useEffect(() => {
+    async function loadPosts() {
+      const { data: postRows, error: postErr } = await supabase
+        .from("documentation_posts")
+        .select("id, event_date, title, content, is_published")
+        .order("event_date", { ascending: true });
+
+      if (postErr) {
+        setError(postErr.message);
+        setLoading(false);
+        return;
+      }
+
+      const ids = (postRows ?? []).map((p) => p.id);
+      const { data: photoRows, error: photoErr } = await supabase
+        .from("documentation_photos")
+        .select("id, documentation_post_id, storage_path")
+        .in("documentation_post_id", ids.length > 0 ? ids : ["00000000-0000-0000-0000-000000000000"])
+        .order("display_order", { ascending: true });
+
+      if (photoErr) {
+        setError(photoErr.message);
+        setLoading(false);
+        return;
+      }
+
+      const withPhotos = (postRows ?? []).map((post) => ({
+        ...post,
+        photos: (photoRows ?? [])
+          .filter((ph) => ph.documentation_post_id === post.id)
+          .map((ph) => ({
+            id: ph.id,
+            storage_path: ph.storage_path,
+            photoUrl: supabase.storage.from("photos").getPublicUrl(ph.storage_path).data.publicUrl,
+          })),
+      }));
+
+      setPosts(withPhotos);
+      setLoading(false);
+    }
     loadPosts();
-  }, []);
+  }, [refreshKey]);
 
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault();
@@ -116,7 +116,7 @@ export default function AdminDocumentationPage() {
     }
 
     setForm({ event_date: EVENT_DATES[0], title: "", content: "" });
-    await loadPosts();
+    setRefreshKey((k) => k + 1);
   }
 
   async function handlePhotoUpload(postId: string, file: File) {
@@ -142,7 +142,7 @@ export default function AdminDocumentationPage() {
         return;
       }
 
-      await loadPosts();
+      setRefreshKey((k) => k + 1);
     } finally {
       setUploadingFor(null);
     }
@@ -167,7 +167,7 @@ export default function AdminDocumentationPage() {
     await supabase.storage.from("photos").remove([photo.storage_path]);
 
     setDeletingId(null);
-    await loadPosts();
+    setRefreshKey((k) => k + 1);
   }
 
   async function handleDeletePost(postId: string) {
@@ -193,7 +193,7 @@ export default function AdminDocumentationPage() {
     }
 
     setDeletingId(null);
-    await loadPosts();
+    setRefreshKey((k) => k + 1);
   }
 
   return (

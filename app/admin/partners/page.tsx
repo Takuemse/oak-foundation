@@ -20,7 +20,6 @@ export default function AdminPartnersPage() {
   const [error, setError] = useState<string | null>(null);
 
   async function load() {
-    setLoading(true);
     try {
       const res = await fetch("/api/partners");
       const data = await res.json();
@@ -29,27 +28,6 @@ export default function AdminPartnersPage() {
       setLoading(false);
     }
   }
-
-  function SidebarLink({
-  label,
-  href,
-  active = false,
-}: {
-  label: string;
-  href: string;
-  active?: boolean;
-}) {
-  return (
-    <Link
-      href={href}
-      className={`block px-3 py-2 rounded-lg text-sm font-medium ${
-        active ? "bg-[#0f1e3d] text-white" : "text-slate-500 hover:bg-slate-50"
-      }`}
-    >
-      {label}
-    </Link>
-  );
-}
 
   useEffect(() => {
     load();
@@ -87,40 +65,6 @@ export default function AdminPartnersPage() {
     } finally {
       setUploadingId(null);
     }
-
-    const [editingId, setEditingId] = useState<string | null>(null);
-const [editForm, setEditForm] = useState({ name: "", website_url: "", description: "" });
-
-function startEdit(org: Org) {
-  setEditingId(org.id);
-  setEditForm({
-    name: org.name,
-    website_url: org.website_url ?? "",
-    description: org.description ?? "",
-  });
-}
-
-async function saveEdit(orgId: string) {
-  setError(null);
-  const supabase = createBrowserSupabaseClient();
-
-  const { error: updateError } = await supabase
-    .from("organizations")
-    .update({
-      name: editForm.name,
-      website_url: editForm.website_url || null,
-      description: editForm.description || null,
-    })
-    .eq("id", orgId);
-
-  if (updateError) {
-    setError(updateError.message);
-    return;
-  }
-
-  setEditingId(null);
-  await load();
-}
   }
 
   return (

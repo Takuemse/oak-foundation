@@ -176,7 +176,7 @@ export default function CheckInPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#F4F6F8] flex text-slate-800 font-sans justify-center">
+    <div className="min-h-screen bg-[#F4F6F8] flex flex-col md:flex-row text-slate-800 font-sans justify-center">
       {/* Global CSS Overrides for html5-qrcode canvas/video setup */}
       <style jsx global>{`
         #qr-reader {
@@ -206,24 +206,21 @@ export default function CheckInPage() {
         }
       `}</style>
 
+      {/* Renders Mobile Top Header (<md) and Desktop Side Nav (>=md) */}
       <AppSidebar />
 
-      {/* Main Layout Area centered with proper spacing matching sidenav offset */}
+      {/* Main Layout Area centered with proper spacing matching side/top nav */}
       <div className="flex-1 flex justify-center">
-        <main className="w-full max-w-[672px] min-h-screen px-[32px] py-[40px] flex flex-col items-start">
+        <main className="w-full max-w-[672px] min-h-screen px-[16px] md:px-[32px] py-[24px] md:py-[40px] flex flex-col items-start">
           
           {/* Container: Heading & Subtitle */}
-          <div className="w-full max-w-[608px] h-[56px] flex flex-col items-start p-0 shrink-0 mb-[20px]">
-            <div className="w-full h-[32px] flex flex-col items-start p-0">
-              <h1 className="font-chillax font-bold text-[24px] leading-[32px] text-[#0E1726]">
-                Event Check-In
-              </h1>
-            </div>
-            <div className="w-full h-[24px] pt-[4px] flex flex-col items-start">
-              <p className="font-['Inter'] font-normal text-[14px] leading-[20px] text-[#6B7590]">
-                Scan an attendee QR code to check them in
-              </p>
-            </div>
+          <div className="w-full max-w-[608px] flex flex-col items-start p-0 shrink-0 mb-[20px]">
+            <h1 className="font-chillax font-bold text-[22px] md:text-[24px] leading-[28px] md:leading-[32px] text-[#0E1726]">
+              Event Check-In
+            </h1>
+            <p className="font-['Inter'] font-normal text-[13px] md:text-[14px] leading-[18px] md:leading-[20px] text-[#6B7590] mt-[4px]">
+              Scan an attendee QR code to check them in
+            </p>
           </div>
 
           {/* Success Card Result */}
@@ -300,10 +297,10 @@ export default function CheckInPage() {
             <div className="w-full max-w-[608px] flex flex-col items-start p-0">
               
               {/* Container: Scanner Shell */}
-              <div className="w-full max-w-[608px] h-[673px] bg-[#0E1726] shadow-[0px_1px_3px_rgba(28,46,90,0.05),0px_4px_16px_rgba(28,46,90,0.07)] rounded-[24px] flex flex-col items-start overflow-hidden relative shrink-0">
+              <div className="w-full max-w-[608px] bg-[#0E1726] shadow-[0px_1px_3px_rgba(28,46,90,0.05),0px_4px_16px_rgba(28,46,90,0.07)] rounded-[24px] flex flex-col items-start overflow-hidden relative shrink-0">
                 
-                {/* Camera Frame Container */}
-                <div className="relative w-full h-[608px] shrink-0 bg-[#0E1726] overflow-hidden">
+                {/* Camera Frame Container - Responsive Aspect Ratio on Mobile */}
+                <div className="relative w-full aspect-square md:h-[608px] shrink-0 bg-[#0E1726] overflow-hidden">
                   
                   {/* HTML5 QR Code Mount */}
                   <div
@@ -321,23 +318,27 @@ export default function CheckInPage() {
                     }}
                   />
 
-                  {/* Radial Glow Frame */}
-                  <div
-                    className="absolute pointer-events-none z-10 w-[211.66px] h-[211.66px] left-[198.17px] top-[198.17px] rounded-full opacity-[0.44]"
-                    style={{
-                      background:
-                        "radial-gradient(70.71% 70.71% at 50% 50%, rgba(168, 187, 206, 0.12) 0%, rgba(168, 187, 206, 0) 70%)",
-                    }}
-                  />
-
-                  {/* Reticle Brackets */}
-                  <div className="absolute z-20 pointer-events-none w-[32px] h-[32px] left-[200px] top-[200px] border-t-2 border-l-2 border-[#A8BBCE] rounded-tl-[12px]" />
-                  <div className="absolute z-20 pointer-events-none w-[32px] h-[32px] left-[376px] top-[200px] border-t-2 border-r-2 border-[#A8BBCE] rounded-tr-[12px]" />
-                  <div className="absolute z-20 pointer-events-none w-[32px] h-[32px] left-[200px] top-[376px] border-b-2 border-l-2 border-[#A8BBCE] rounded-bl-[12px]" />
-                  <div className="absolute z-20 pointer-events-none w-[32px] h-[32px] left-[376px] top-[376px] border-b-2 border-r-2 border-[#A8BBCE] rounded-br-[12px]" />
+                  {/* Centered Reticle Frame Overlay */}
+                  <div className="absolute inset-0 z-20 pointer-events-none flex items-center justify-center">
+                    <div className="relative w-[208px] h-[208px]">
+                      {/* Glow Overlay */}
+                      <div
+                        className="absolute -inset-1 rounded-full opacity-[0.44] pointer-events-none"
+                        style={{
+                          background:
+                            "radial-gradient(70.71% 70.71% at 50% 50%, rgba(168, 187, 206, 0.12) 0%, rgba(168, 187, 206, 0) 70%)",
+                        }}
+                      />
+                      {/* Reticle Brackets */}
+                      <div className="absolute top-0 left-0 w-[32px] h-[32px] border-t-2 border-l-2 border-[#A8BBCE] rounded-tl-[12px]" />
+                      <div className="absolute top-0 right-0 w-[32px] h-[32px] border-t-2 border-r-2 border-[#A8BBCE] rounded-tr-[12px]" />
+                      <div className="absolute bottom-0 left-0 w-[32px] h-[32px] border-b-2 border-l-2 border-[#A8BBCE] rounded-bl-[12px]" />
+                      <div className="absolute bottom-0 right-0 w-[32px] h-[32px] border-b-2 border-r-2 border-[#A8BBCE] rounded-br-[12px]" />
+                    </div>
+                  </div>
 
                   {/* Position text */}
-                  <p className="absolute z-20 pointer-events-none top-[572px] left-[202.91px] w-[203px] h-[16px] font-['Inter'] font-normal text-[12px] leading-[16px] tracking-[0.3px] text-[#A8BBCE]/50 text-center">
+                  <p className="absolute z-20 pointer-events-none bottom-4 left-0 right-0 font-['Inter'] font-normal text-[12px] leading-[16px] tracking-[0.3px] text-[#A8BBCE]/50 text-center px-4">
                     Position QR code within the frame
                   </p>
 
@@ -355,8 +356,8 @@ export default function CheckInPage() {
                     <ScanLine size={14} className="text-[#A8BBCE]/70" />
                   </div>
 
-                  <div className="w-[276px] h-[16px] flex flex-col items-start justify-center p-0">
-                    <span className="font-['Inter'] font-normal text-[12px] leading-[16px] text-[#A8BBCE]/45">
+                  <div className="flex-1 flex flex-col items-start justify-center p-0">
+                    <span className="font-['Inter'] font-normal text-[12px] leading-[16px] text-[#A8BBCE]/45 truncate w-full">
                       {loading ? "Checking in…" : "Hold camera steady · Auto-scans in 1–2 seconds"}
                     </span>
                   </div>
@@ -377,7 +378,7 @@ export default function CheckInPage() {
                       type="button"
                       onClick={() => submitCheckIn(item.token)}
                       disabled={loading}
-                      className="w-full h-[62px] p-[12px] gap-[12px] border border-[rgba(28,46,90,0.1)] rounded-[16px] flex flex-row items-center hover:bg-slate-50 transition text-left shrink-0"
+                      className="w-full min-h-[62px] p-[12px] gap-[12px] border border-[rgba(28,46,90,0.1)] rounded-[16px] flex flex-row items-center hover:bg-slate-50 transition text-left shrink-0"
                     >
                       <div className="w-[36px] h-[36px] bg-[#162E55] rounded-[12px] flex items-center justify-center shrink-0">
                         <span className="font-['Inter'] font-bold text-[12px] leading-[16px] text-white">
@@ -385,11 +386,11 @@ export default function CheckInPage() {
                         </span>
                       </div>
 
-                      <div className="flex-1 flex flex-col items-start justify-center">
-                        <span className="font-['Inter'] font-medium text-[14px] leading-[20px] text-[#0E1726]">
+                      <div className="flex-1 flex flex-col items-start justify-center min-w-0">
+                        <span className="font-['Inter'] font-medium text-[14px] leading-[20px] text-[#0E1726] truncate w-full">
                           {item.name}
                         </span>
-                        <span className="font-['Consolas'] font-normal text-[10px] leading-[15px] text-[#6B7590]">
+                        <span className="font-['Consolas'] font-normal text-[10px] leading-[15px] text-[#6B7590] truncate w-full">
                           {item.token}
                         </span>
                       </div>
@@ -432,7 +433,7 @@ export default function CheckInPage() {
                   <button
                     type="submit"
                     disabled={loading || !qrToken.trim()}
-                    className="w-[90px] h-[52.5px] bg-[#162E55] shadow-[0px_4px_20px_rgba(28,46,90,0.3)] rounded-[16px] flex items-center justify-center font-chillax font-semibold text-[16px] leading-[24px] text-white hover:bg-[#0f213f] transition disabled:opacity-40"
+                    className="w-[90px] h-[52.5px] bg-[#162E55] shadow-[0px_4px_20px_rgba(28,46,90,0.3)] rounded-[16px] flex items-center justify-center font-chillax font-semibold text-[16px] leading-[24px] text-white hover:bg-[#0f213f] transition disabled:opacity-40 shrink-0"
                   >
                     {loading ? "…" : "Check"}
                   </button>
@@ -484,7 +485,6 @@ function ResultHeader({
 
   return (
     <div className={`w-full rounded-[24px] p-6 relative overflow-hidden text-white shadow-sm ${gradientClass}`}>
-      {/* Decorative Overlay Blur Effect */}
       <div className="absolute -top-8 -right-8 w-40 h-40 bg-white/10 rounded-full pointer-events-none blur-xl" />
 
       <div className="flex items-center gap-4 relative z-10">
@@ -495,12 +495,12 @@ function ResultHeader({
             <XCircle className="w-6 h-6 text-white" />
           )}
         </div>
-        <div className="flex flex-col text-left">
+        <div className="flex flex-col text-left min-w-0">
           <span className="font-['Inter'] font-semibold text-[10px] leading-[14px] tracking-[1px] text-white/80 uppercase">
             {label}
           </span>
-          <h2 className="font-chillax font-bold text-[20px] leading-[28px] text-white mt-0.5">{title}</h2>
-          <p className="font-['Inter'] font-normal text-[12px] leading-[16px] text-white/90 mt-1">
+          <h2 className="font-chillax font-bold text-[18px] md:text-[20px] leading-[24px] md:leading-[28px] text-white mt-0.5 truncate">{title}</h2>
+          <p className="font-['Inter'] font-normal text-[12px] leading-[16px] text-white/90 mt-1 truncate">
             {subtitle}
           </p>
         </div>
@@ -514,17 +514,16 @@ function AttendeeSummary({ attendee }: { attendee: NonNullable<CheckInResult["at
 
   return (
     <div className="w-full bg-white rounded-[24px] border border-[rgba(28,46,90,0.1)] p-6 shadow-sm flex flex-col gap-5 text-left">
-      {/* Attendee Profile Row */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3.5">
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-3.5 min-w-0">
           <div className="w-11 h-11 rounded-[14px] bg-[#162E55] flex items-center justify-center text-white font-['Inter'] font-bold text-[14px] shrink-0">
             {initials}
           </div>
-          <div className="flex flex-col">
-            <h3 className="font-['Inter'] font-semibold text-[16px] leading-[22px] text-[#0E1726]">
+          <div className="flex flex-col min-w-0">
+            <h3 className="font-['Inter'] font-semibold text-[16px] leading-[22px] text-[#0E1726] truncate">
               {attendee.first_name} {attendee.last_name}
             </h3>
-            <span className="font-['Inter'] font-normal text-[13px] leading-[18px] text-[#6B7590]">
+            <span className="font-['Inter'] font-normal text-[13px] leading-[18px] text-[#6B7590] truncate">
               {attendee.organization_name ?? "No Organization"}
             </span>
           </div>
@@ -540,7 +539,6 @@ function AttendeeSummary({ attendee }: { attendee: NonNullable<CheckInResult["at
         )}
       </div>
 
-      {/* Detail Block Grid */}
       <div className="grid grid-cols-2 gap-3 pt-1">
         <div className="bg-[#EEF1F5] rounded-[16px] p-3.5 flex flex-col">
           <span className="font-['Inter'] font-semibold text-[10px] leading-[14px] tracking-[0.5px] uppercase text-[#6B7590]">
@@ -579,7 +577,6 @@ function LiveEventStatusCard() {
         </div>
       </div>
 
-      {/* Progress Metric Bar */}
       <div className="flex flex-col gap-1.5">
         <div className="w-full bg-[#EEF1F5] h-2 rounded-full overflow-hidden">
           <div className="bg-gradient-to-r from-[#1C2E5A] to-[#10B981] h-full w-[67%] rounded-full transition-all duration-500" />

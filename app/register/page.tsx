@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import { QRCodeCanvas } from "qrcode.react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import AppSidebar from "@/app/components/AppSidebar";
 
 type RegisterResponse = {
@@ -106,48 +107,65 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#f4f6f8] flex text-slate-800 font-sans">
-      <AppSidebar />
+    <div className="min-h-screen bg-[#F4F5F7] flex flex-col md:flex-row text-slate-800 font-sans">
+      {/* Desktop Sidebar */}
+      <div className="hidden md:block">
+        <AppSidebar />
+      </div>
 
-      <main className="flex-1 px-4 py-8 sm:px-8 sm:py-10 max-w-[608px] mx-auto w-full">
+      {/* Mobile Top Header */}
+      <header className="md:hidden w-full h-[82px] bg-[#162E55] px-4 pt-[38px] pb-[16px] flex items-center gap-[12px]">
+        <div className="relative w-[50px] h-[28px] shrink-0 flex items-center justify-center">
+          <Image
+            src="/Logo-Oak-Foundation.svg.svg"
+            alt="Oak Foundation Logo"
+            fill
+            priority
+            className="object-contain brightness-0 invert"
+          />
+        </div>
+        <div className="w-[1px] h-[20px] bg-white/20 shrink-0" />
+        <span className="font-['Avenir_Next_LT_Pro',sans-serif] font-semibold text-[12px] leading-[16px] tracking-[1.2px] uppercase text-white/70 truncate">
+          Partner Convening 2026
+        </span>
+      </header>
+
+      {/* Main Content Area */}
+      <main className="flex-1 px-4 py-6 md:px-8 md:py-10 max-w-[402px] md:max-w-[672px] mx-auto w-full flex flex-col gap-4">
         {result ? (
           <RegistrationSuccess attendee={result} onRegisterAnother={registerAnother} />
         ) : (
           <>
             {/* Header Banner */}
-            <div className="relative overflow-hidden mb-4 p-6 flex flex-col justify-between w-full h-[167px] bg-[#162E55] rounded-[24px] shadow-[0px_1px_3px_rgba(28,46,90,0.05),0px_4px_16px_rgba(28,46,90,0.07)]">
-              {/* Radial Light Glow Effect */}
+            <div className="relative overflow-hidden w-full h-[167px] bg-[#162E55] rounded-[24px] p-6 shadow-[0px_1px_3px_rgba(28,46,90,0.05),0px_4px_16px_rgba(28,46,90,0.07)] flex flex-col justify-between">
               <div
-                className="pointer-events-none absolute w-[192px] h-[192px] left-[458.5px] -top-[49px] rounded-full"
+                className="pointer-events-none absolute w-[192px] h-[192px] -right-[26px] -top-[40px] rounded-full"
                 style={{
                   background:
                     "radial-gradient(70.71% 70.71% at 50% 50%, rgba(168, 187, 206, 0.2) 0%, rgba(168, 187, 206, 0) 70%)",
                 }}
               />
 
-              {/* Header Text Content */}
-              <div className="relative z-10 flex flex-col justify-between h-full pt-1">
-                <div>
-                  <h1 className="font-chillax font-bold text-[30px] leading-[38px] text-white">
-                    Partner <br />
-                    Convening 2026
-                  </h1>
-                </div>
+              <div className="relative z-10 flex flex-col justify-between h-full">
+                <h1 className="font-['Chillax',sans-serif] font-bold text-[30px] leading-[38px] text-white pt-1">
+                  Partner <br />
+                  Convening 2026
+                </h1>
 
-                <p className="font-sans font-normal text-[14px] leading-[20px] text-white/50">
-                  Harare · 9–11 March 2026
+                <p className="font-['Avenir_Next_LT_Pro',sans-serif] font-normal text-[14px] leading-[20px] text-white/50">
+                  Geneva · 9–11 March 2026
                 </p>
               </div>
             </div>
 
-            {/* Stat Cards */}
-            <div className="grid grid-cols-3 gap-3 mb-4 w-full h-[98px]">
+            {/* Stat Cards Grid */}
+            <div className="grid grid-cols-3 gap-3 w-full h-[98px]">
               <StatCard
                 value="110+"
                 label="Attendees"
                 icon={
-                  <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  <svg className="w-4 h-4 text-[#A8BBCE]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                   </svg>
                 }
               />
@@ -155,8 +173,8 @@ export default function RegisterPage() {
                 value="24"
                 label="Sessions"
                 icon={
-                  <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  <svg className="w-4 h-4 text-[#A8BBCE]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                   </svg>
                 }
               />
@@ -164,30 +182,29 @@ export default function RegisterPage() {
                 value="38"
                 label="Partners"
                 icon={
-                  <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                  <svg className="w-4 h-4 text-[#A8BBCE]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                   </svg>
                 }
               />
             </div>
 
             {error && (
-              <div className="bg-red-50 text-red-700 text-xs rounded-xl px-4 py-3 mb-4 border border-red-100">
+              <div className="bg-red-50 text-red-700 text-xs rounded-xl px-4 py-3 border border-red-100">
                 {error}
               </div>
             )}
 
-            {/* Registration Form */}
+            {/* Registration Form Card */}
             <form
               onSubmit={handleSubmit}
               className="w-full bg-white rounded-[24px] p-5 shadow-[0px_1px_3px_rgba(28,46,90,0.05),0px_4px_16px_rgba(28,46,90,0.07)] border border-[rgba(28,46,90,0.1)] flex flex-col gap-4 text-left"
             >
-              <h2 className="font-chillax font-semibold text-[18px] leading-[28px] text-[#0E1726]">
+              <h2 className="font-['Chillax',sans-serif] font-semibold text-[18px] leading-[28px] text-[#0E1726]">
                 Registration Form
               </h2>
 
-              {/* Name Fields Row */}
-              <div className="grid grid-cols-2 gap-3.5">
+              <div className="grid grid-cols-2 gap-3">
                 <Field label="First Name" required>
                   <input
                     required
@@ -227,7 +244,6 @@ export default function RegisterPage() {
                 />
               </Field>
 
-              {/* Custom Role Dropdown */}
               <Field label="Role / Capacity" required>
                 <CustomRoleDropdown
                   value={form.role}
@@ -256,9 +272,9 @@ export default function RegisterPage() {
                 />
               </Field>
 
-              {/* Requirements Container Block */}
+              {/* Requirements Group */}
               <div className="bg-[#EEF1F5] rounded-[16px] p-4 border border-[rgba(28,46,90,0.1)] flex flex-col gap-3">
-                <span className="font-sans font-semibold text-[10px] leading-[15px] tracking-[1px] text-[#6B7590] uppercase">
+                <span className="font-['Chillax',sans-serif] font-semibold text-[10px] leading-[15px] tracking-[1px] text-[#6B7590] uppercase">
                   Requirements
                 </span>
 
@@ -267,7 +283,7 @@ export default function RegisterPage() {
                     placeholder="e.g. Vegetarian, Halal, Gluten-free"
                     value={form.dietaryRequirements}
                     onChange={(e) => update("dietaryRequirements", e.target.value)}
-                    className={inputClass}
+                    className={inputClassWhite}
                   />
                 </Field>
 
@@ -276,7 +292,7 @@ export default function RegisterPage() {
                     placeholder="e.g. Wheelchair access, hearing loop"
                     value={form.accessibilityRequirements}
                     onChange={(e) => update("accessibilityRequirements", e.target.value)}
-                    className={inputClass}
+                    className={inputClassWhite}
                   />
                 </Field>
 
@@ -285,20 +301,20 @@ export default function RegisterPage() {
                     placeholder="e.g. Flight from London, hotel needed"
                     value={form.travelRequirements}
                     onChange={(e) => update("travelRequirements", e.target.value)}
-                    className={inputClass}
+                    className={inputClassWhite}
                   />
                 </Field>
               </div>
 
-              {/* Consent Card */}
+              {/* Privacy Consent */}
               <label className="flex items-start gap-3 p-4 border border-[rgba(28,46,90,0.18)] rounded-[16px] cursor-pointer hover:bg-slate-50 transition">
                 <input
                   type="checkbox"
                   checked={form.consentGiven}
                   onChange={(e) => update("consentGiven", e.target.checked)}
-                  className="mt-0.5 w-5 h-5 rounded-[6px] border-2 border-[rgba(28,46,90,0.18)] text-[#162E55] focus:ring-[#162E55] accent-[#162E55]"
+                  className="mt-1 w-[20px] h-[20px] rounded-[6px] border border-[rgba(28,46,90,0.18)] text-[#162E55] focus:ring-[#162E55] accent-[#162E55] shrink-0"
                 />
-                <span className="font-sans font-normal text-[14px] leading-[23px] text-[#0E1726]">
+                <span className="font-['Avenir_Next_LT_Pro',sans-serif] font-normal text-[14px] leading-[23px] text-[#0E1726]">
                   I agree to OAK Foundation&apos;s{" "}
                   <a href="#" className="underline font-medium hover:text-[#162E55]">
                     privacy policy
@@ -307,22 +323,24 @@ export default function RegisterPage() {
                 </span>
               </label>
 
-              {/* Submit Button */}
+              {/* Action Button */}
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full h-[56px] bg-[#162E55] text-white rounded-[16px] font-chillax font-semibold text-[16px] leading-[24px] transition duration-150 disabled:opacity-50 flex items-center justify-center shadow-[0px_4px_20px_rgba(28,46,90,0.3)] hover:bg-[#0f213f]"
+                className="w-full h-[56px] text-white rounded-[16px] font-['Chillax',sans-serif] font-semibold text-[16px] leading-[24px] transition duration-150 disabled:opacity-50 flex items-center justify-center shadow-[0px_4px_20px_rgba(28,46,90,0.3)] hover:opacity-95"
+                style={{
+                  background: "linear-gradient(135deg, #1C2E5A 0%, #2D4A82 100%)",
+                }}
               >
                 {loading ? "Registering…" : "Register"}
               </button>
             </form>
 
-            {/* Security Disclaimer Footer */}
-            <div className="w-full py-4 flex flex-col items-center">
-              <p className="font-sans font-normal text-[12px] leading-[16px] text-center text-[#6B7590] max-w-[452px]">
+            <footer className="w-full py-4 flex flex-col items-center">
+              <p className="font-['Avenir_Next_LT_Pro',sans-serif] font-normal text-[12px] leading-[16px] text-center text-[#6B7590] max-w-[371px]">
                 Your data is secured and handled by OAK Foundation in accordance with GDPR.
               </p>
-            </div>
+            </footer>
           </>
         )}
       </main>
@@ -331,7 +349,10 @@ export default function RegisterPage() {
 }
 
 const inputClass =
-  "w-full h-[52.5px] rounded-[14px] bg-[#EEF1F5] px-4 text-[15px] text-[#0E1726] placeholder-[#6B7590] focus:outline-none focus:ring-2 focus:ring-[#162E55]/20 transition border-0";
+  "w-full h-[52.5px] rounded-[14px] bg-[#EEF1F5] px-4 text-[15px] font-['Avenir_Next_LT_Pro',sans-serif] text-[#0E1726] placeholder-[#6B7590] focus:outline-none focus:ring-2 focus:ring-[#162E55]/20 transition border-0";
+
+const inputClassWhite =
+  "w-full h-[52.5px] rounded-[14px] bg-white px-4 text-[15px] font-['Avenir_Next_LT_Pro',sans-serif] text-[#0E1726] placeholder-[#6B7590] focus:outline-none focus:ring-2 focus:ring-[#162E55]/20 transition border-0";
 
 function Field({
   label,
@@ -344,10 +365,10 @@ function Field({
 }) {
   return (
     <div className="flex flex-col gap-[6px] w-full">
-      <label className="font-sans font-semibold text-[12px] leading-[16px] tracking-[0.3px] text-[#6B7590] uppercase flex items-center gap-1">
+      <div className="flex items-center gap-1 font-['Avenir_Next_LT_Pro',sans-serif] font-semibold text-[12px] leading-[16px] tracking-[0.3px] text-[#6B7590] uppercase">
         <span>{label}</span>
-        {required && <span className="text-[#FB2C36]">*</span>}
-      </label>
+        {required && <span className="text-[#FB2C36] font-['Inter',sans-serif]">*</span>}
+      </div>
       {children}
     </div>
   );
@@ -355,11 +376,11 @@ function Field({
 
 function StatCard({ value, label, icon }: { value: string; label: string; icon?: React.ReactNode }) {
   return (
-    <div className="bg-white rounded-2xl p-4 h-full shadow-sm flex flex-col justify-between text-left border border-slate-100">
+    <div className="bg-white rounded-[24px] p-4 h-full shadow-[0px_1px_3px_rgba(28,46,90,0.05),0px_4px_16px_rgba(28,46,90,0.07)] flex flex-col justify-between text-left border border-[rgba(28,46,90,0.1)]">
       <div>{icon}</div>
       <div>
-        <div className="text-xl font-bold text-slate-900 leading-none">{value}</div>
-        <div className="text-[11px] text-slate-400 font-normal mt-1">{label}</div>
+        <div className="font-['Chillax',sans-serif] text-[20px] font-bold text-[#0E1726] leading-[20px]">{value}</div>
+        <div className="font-['Avenir_Next_LT_Pro',sans-serif] text-[12px] text-[#6B7590] font-normal leading-[16px] mt-1">{label}</div>
       </div>
     </div>
   );
@@ -390,18 +411,18 @@ function CustomRoleDropdown({
       <button
         type="button"
         onClick={() => setIsOpen((prev) => !prev)}
-        className={`${inputClass} flex items-center justify-between text-left border border-transparent focus:border-[#162E55] transition`}
+        className={`${inputClass} flex items-center justify-between text-left transition`}
       >
         <span className={value ? "text-[#0E1726]" : "text-[#6B7590]"}>
           {value || "Select your role"}
         </span>
         <svg
-          className={`w-3.5 h-3.5 text-[#6B7590] transition-transform duration-200 ${
+          className={`w-[14px] h-[14px] text-[#6B7590] transition-transform duration-200 ${
             isOpen ? "rotate-180" : ""
           }`}
           fill="none"
           stroke="currentColor"
-          strokeWidth="2"
+          strokeWidth="1.16"
           viewBox="0 0 24 24"
         >
           <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
@@ -411,7 +432,7 @@ function CustomRoleDropdown({
       {isOpen && (
         <div className="absolute left-0 top-full mt-2 w-full bg-white rounded-[15px] p-3.5 shadow-[0px_3px_12px_rgba(0,0,0,0.15)] border border-slate-100 z-50 flex flex-col gap-1.5 animate-in fade-in duration-100">
           <div className="w-full h-[30px] px-[10px] py-[3px] bg-[#162E55] rounded-[5px] flex items-center shrink-0">
-            <span className="font-['Inter'] font-normal text-[15px] leading-[22px] text-white">
+            <span className="font-['Avenir_Next_LT_Pro',sans-serif] font-normal text-[15px] leading-[22px] text-white">
               Select your role
             </span>
           </div>
@@ -427,7 +448,7 @@ function CustomRoleDropdown({
                     onChange(role);
                     setIsOpen(false);
                   }}
-                  className={`w-full text-left px-[10px] py-[4px] rounded transition-colors duration-100 font-['Inter'] font-normal text-[15px] leading-[22px] ${
+                  className={`w-full text-left px-[10px] py-[4px] rounded transition-colors duration-100 font-['Avenir_Next_LT_Pro',sans-serif] font-normal text-[15px] leading-[22px] ${
                     isSelected
                       ? "bg-[#EEF1F5] text-[#162E55] font-medium"
                       : "text-[#0E1726] hover:bg-slate-50 hover:text-[#162E55]"
@@ -478,7 +499,6 @@ function RegistrationSuccess({
 
   return (
     <div className="w-full flex flex-col gap-4 text-left">
-      {/* 1. Header Banner */}
       <div className="w-full bg-[#162E55] text-white rounded-[24px] p-6 shadow-[0px_4px_16px_rgba(28,46,90,0.07)] flex items-center gap-4">
         <div className="w-10 h-10 rounded-full border border-white/30 flex items-center justify-center shrink-0">
           <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
@@ -486,24 +506,23 @@ function RegistrationSuccess({
           </svg>
         </div>
         <div className="flex flex-col">
-          <span className="font-sans font-semibold text-[10px] leading-[14px] tracking-[1px] text-white/60 uppercase">
+          <span className="font-['Chillax',sans-serif] font-semibold text-[10px] leading-[14px] tracking-[1px] text-white/60 uppercase">
             Registration Complete
           </span>
-          <h1 className="font-chillax font-bold text-[22px] leading-[28px] text-white mt-0.5">
+          <h1 className="font-['Chillax',sans-serif] font-bold text-[22px] leading-[28px] text-white mt-0.5">
             You&apos;re Registered, <br />
             {attendee.firstName}!
           </h1>
           {attendee.email && (
-            <span className="font-sans font-normal text-[12px] leading-[18px] text-white/50 mt-1">
+            <span className="font-['Avenir_Next_LT_Pro',sans-serif] font-normal text-[12px] leading-[18px] text-white/50 mt-1">
               {attendee.email}
             </span>
           )}
         </div>
       </div>
 
-      {/* 2. QR Code Pass Card */}
       <div className="w-full bg-white rounded-[24px] p-8 shadow-[0px_1px_3px_rgba(28,46,90,0.05),0px_4px_16px_rgba(28,46,90,0.07)] border border-[rgba(28,46,90,0.1)] flex flex-col items-center text-center">
-        <span className="font-sans font-semibold text-[10px] leading-[15px] tracking-[1px] text-[#6B7590] uppercase mb-6">
+        <span className="font-['Chillax',sans-serif] font-semibold text-[10px] leading-[15px] tracking-[1px] text-[#6B7590] uppercase mb-6">
           Your Entry Pass
         </span>
 
@@ -521,14 +540,13 @@ function RegistrationSuccess({
         <span className="font-mono font-medium text-[13px] leading-[18px] text-[#6B7590] tracking-wider uppercase mb-1">
           {attendee.qrToken}
         </span>
-        <span className="font-sans font-normal text-[12px] leading-[16px] text-[#A0AEC0]">
+        <span className="font-['Avenir_Next_LT_Pro',sans-serif] font-normal text-[12px] leading-[16px] text-[#A0AEC0]">
           Present at event entrance for check-in
         </span>
       </div>
 
-      {/* 3. Registration Details Card */}
       <div className="w-full bg-white rounded-[24px] p-6 shadow-[0px_1px_3px_rgba(28,46,90,0.05),0px_4px_16px_rgba(28,46,90,0.07)] border border-[rgba(28,46,90,0.1)] flex flex-col gap-4">
-        <span className="font-sans font-semibold text-[10px] leading-[15px] tracking-[1px] text-[#6B7590] uppercase">
+        <span className="font-['Chillax',sans-serif] font-semibold text-[10px] leading-[15px] tracking-[1px] text-[#6B7590] uppercase">
           Registration Details
         </span>
 
@@ -538,14 +556,14 @@ function RegistrationSuccess({
           <DetailRow label="Role" value={attendee.role || "—"} />
           <DetailRow label="Email" value={attendee.email || "—"} />
           <DetailRow label="Event Dates" value="9–11 March 2026" />
-          <DetailRow label="Location" value="Harare, Zimbabwe" />
+          <DetailRow label="Location" value="Geneva, Switzerland" />
         </div>
       </div>
 
-      {/* 4. Download Button */}
       <button
         onClick={handleDownload}
-        className="w-full h-[52px] bg-[#162E55] text-white rounded-[16px] font-chillax font-semibold text-[15px] leading-[22px] transition duration-150 flex items-center justify-center gap-2 shadow-[0px_4px_20px_rgba(28,46,90,0.25)] hover:bg-[#0f213f]"
+        className="w-full h-[52px] text-white rounded-[16px] font-['Chillax',sans-serif] font-semibold text-[15px] leading-[22px] transition duration-150 flex items-center justify-center gap-2 shadow-[0px_4px_20px_rgba(28,46,90,0.25)] hover:opacity-95"
+        style={{ background: "linear-gradient(135deg, #1C2E5A 0%, #2D4A82 100%)" }}
       >
         <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
@@ -553,10 +571,9 @@ function RegistrationSuccess({
         Download QR Code
       </button>
 
-      {/* 5. Register Another Link */}
       <button
         onClick={onRegisterAnother}
-        className="w-full py-2 text-center font-sans font-medium text-[13px] leading-[18px] text-[#6B7590] hover:text-[#162E55] transition flex items-center justify-center gap-1.5"
+        className="w-full py-2 text-center font-['Avenir_Next_LT_Pro',sans-serif] font-medium text-[13px] leading-[18px] text-[#6B7590] hover:text-[#162E55] transition flex items-center justify-center gap-1.5"
       >
         <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
@@ -570,10 +587,10 @@ function RegistrationSuccess({
 function DetailRow({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex justify-between items-center py-1 border-b border-slate-100 last:border-0 last:pb-0">
-      <span className="font-sans font-normal text-[13px] leading-[18px] text-[#6B7590]">
+      <span className="font-['Avenir_Next_LT_Pro',sans-serif] font-normal text-[13px] leading-[18px] text-[#6B7590]">
         {label}
       </span>
-      <span className="font-sans font-medium text-[13px] leading-[18px] text-[#0E1726] text-right">
+      <span className="font-['Avenir_Next_LT_Pro',sans-serif] font-medium text-[13px] leading-[18px] text-[#0E1726] text-right">
         {value}
       </span>
     </div>

@@ -171,6 +171,7 @@ npx supabase db reset
 
 | File | What it does |
 |---|---|
+| `enable_extensions` | Enables `pgcrypto` (required for `gen_random_uuid()` on fresh cloud projects) |
 | `initial_schema` | Core tables: organizations, attendees, attendance, programme, documentation |
 | `admin_security` | `admin_users` table, RLS enabled on all tables, `is_admin()` function |
 | `rls_policies` | Public read policies + admin-only policies for sensitive tables |
@@ -180,8 +181,15 @@ npx supabase db reset
 | `secure_registration_function` | Explicit execute grants on `register_attendee` (anon + authenticated only) |
 | `attendee_organization_text_fields` | Adds free-text `organization_name` / `sub_partner` to attendees |
 | `register_attendee_org_text` | Updates `register_attendee()` to accept the new text fields |
+| `programme_sessions_richer_fields` (20260909113000) | Adds `category`, `presenter_name`, `presenter_org`, `is_featured` to `programme_sessions` |
 | `seed_programme` | Day 1 full schedule; Day 2/3 placeholders |
 | `seed_partners` | The 8 partner organizations from the Figma reference |
+| `storage_buckets` | Creates public `logos` / `photos` buckets with admin-only write policies |
+| `open_coordination_access` | Opens `check_in_attendee()` / `get_attendance_summary()` execute to anon + authenticated (coordination-team self-declared access) |
+| `add_session_category_fields` | Idempotent guard for the session category/presenter/featured columns |
+| `short_qr_tokens` | Human-readable QR tokens (`OAK-2026-XXXX-XXXX`) via `generate_short_qr_token()` column default |
+| `register_attendee_unique_short_token` | `register_attendee()` regenerates the short QR token until unique |
+| `programme_sessions_richer_fields` (20260910223527) | Idempotent no-op guard so the full chain runs cleanly from scratch |
 
 ---
 
