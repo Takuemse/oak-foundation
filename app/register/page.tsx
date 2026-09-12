@@ -73,8 +73,8 @@ export default function RegisterPage() {
         setError(data.message ?? "Registration failed. Please try again.");
         return;
       }
-      localStorage.setItem("oak_registered", "true");
-      localStorage.setItem("oak_role", data.attendee.role ?? form.role);
+      sessionStorage.setItem("oak_registered", "true");
+      sessionStorage.setItem("oak_role", data.attendee.role ?? form.role);
       window.dispatchEvent(new Event("oak-registration-changed"));
       
       if (form.role === "Partner") {
@@ -160,7 +160,7 @@ export default function RegisterPage() {
               </div>
             </div>
 
-        
+      
             <div className="grid grid-cols-3 gap-2 sm:gap-3 w-full">
               <StatCard
                 value="110+"
@@ -197,7 +197,7 @@ export default function RegisterPage() {
               </div>
             )}
 
-            
+      
             <form
               onSubmit={handleSubmit}
               className="w-full bg-white rounded-[24px] p-4 sm:p-5 shadow-[0px_1px_3px_rgba(28,46,90,0.05),0px_4px_16px_rgba(28,46,90,0.07)] border border-[rgba(28,46,90,0.1)] flex flex-col gap-4 text-left"
@@ -308,7 +308,7 @@ export default function RegisterPage() {
                 </Field>
               </div>
 
-              
+      
               <label className="flex items-start gap-3 p-4 border border-[rgba(28,46,90,0.18)] rounded-[16px] cursor-pointer hover:bg-slate-50 transition">
                 <input
                   type="checkbox"
@@ -325,7 +325,7 @@ export default function RegisterPage() {
                 </span>
               </label>
 
-              
+      
               <button
                 type="submit"
                 disabled={loading}
@@ -381,10 +381,10 @@ function StatCard({ value, label, icon }: { value: string; label: string; icon?:
     <div className="bg-white rounded-[20px] sm:rounded-[24px] p-3 sm:p-4 h-full shadow-[0px_1px_3px_rgba(28,46,90,0.05),0px_4px_16px_rgba(28,46,90,0.07)] flex flex-col justify-between text-left border border-[rgba(28,46,90,0.1)]">
       <div>{icon}</div>
       <div className="mt-2">
-        <div className="font-['Chillax',sans-serif] font-bold text-[18px] sm:text-[20px] leading-[20px] tracking-[0px] text-[#0E1726]">
+        <div className="font-['Chillax',sans-serif] font-bold text-[20px] leading-[20px] tracking-[0px] text-[#0E1726]">
           {value}
         </div>
-        <div className="font-['Inter',sans-serif] font-normal text-[11px] sm:text-[12px] leading-[16px] tracking-[0px] text-[#6B7590] mt-0.5 truncate">
+        <div className="font-['Inter',sans-serif] font-normal text-[12px] leading-[16px] tracking-[0px] text-[#6B7590] mt-0.5 truncate">
           {label}
         </div>
       </div>
@@ -549,6 +549,7 @@ function RegistrationSuccess({
         <span className="font-['Inter',sans-serif] font-normal text-[12px] leading-[16px] text-[#A0AEC0]">
           Present at event entrance for check-in
         </span>
+
       </div>
 
       <div className="w-full bg-white rounded-[24px] p-6 shadow-[0px_1px_3px_rgba(28,46,90,0.05),0px_4px_16px_rgba(28,46,90,0.07)] border border-[rgba(28,46,90,0.1)] flex flex-col gap-4">

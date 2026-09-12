@@ -32,8 +32,8 @@ export default function AppSidebar() {
 
   useEffect(() => {
     function sync() {
-      setHasRegistered(localStorage.getItem("oak_registered") === "true");
-      setRole(localStorage.getItem("oak_role"));
+      setHasRegistered(sessionStorage.getItem("oak_registered") === "true");
+      setRole(sessionStorage.getItem("oak_role"));
     }
     sync();
     window.addEventListener("oak-registration-changed", sync);

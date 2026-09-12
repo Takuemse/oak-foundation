@@ -46,10 +46,10 @@ export default function AttendancePage() {
           
           {/* Header */}
           <div className="flex flex-col items-start w-[608px] h-[54px] flex-none mb-[24px]">
-            <h1 className="font-['Chillax'] font-bold text-[24px] leading-[32px] text-[#0E1726]">
+            <h1 className="font-['Chillax'] font-bold text-[24px] leading-[32px] tracking-[0px] text-[#0E1726]">
               Attendance
             </h1>
-            <p className="font-['Inter'] font-normal text-[14px] leading-[20px] text-[#6B7590] mt-[2px]">
+            <p className="font-['Inter'] font-normal text-[14px] leading-[20px] tracking-[0px] text-[#6B7590] mt-[2px]">
               Check-in tracking · 9–11 March 2026
             </p>
           </div>
@@ -63,10 +63,10 @@ export default function AttendancePage() {
           {/* Main Card */}
           <div className="box-border flex flex-col items-center p-[40px] gap-[16px] w-[608px] bg-[#FFFFFF] border border-[rgba(28,46,90,0.1)] shadow-[0px_1px_3px_rgba(28,46,90,0.05),0px_4px_16px_rgba(28,46,90,0.07)] rounded-[24px] flex-none">
             {loading ? (
-              <p className="font-['Inter'] text-[14px] text-[#6B7590] py-[40px]">Loading…</p>
+              <p className="font-['Inter'] font-normal text-[14px] leading-[20px] tracking-[0px] text-[#6B7590] py-[40px]">Loading…</p>
             ) : summary && summary.checked_in > 0 ? (
               <div className="w-full py-[8px]">
-                <p className="font-['Inter'] text-[14px] font-medium text-[#0E1726] mb-[12px]">
+                <p className="font-['Inter'] font-medium text-[14px] leading-[20px] tracking-[0px] text-[#0E1726] mb-[12px]">
                   {summary.checked_in} of {summary.total_registered} attendees checked in
                 </p>
                 <div className="w-full bg-[#EEF1F5] rounded-full h-[8px] mb-[24px]">
@@ -88,10 +88,10 @@ export default function AttendancePage() {
                   <Users size={36} strokeWidth={1.75} className="text-[#A8BBCE]" />
                 </div>
                 <div className="flex flex-col items-center w-[320px]">
-                  <h2 className="font-['Chillax'] font-bold text-[18px] leading-[28px] text-[#0E1726] text-center">
+                  <h2 className="font-['Chillax'] font-bold text-[18px] leading-[28px] tracking-[0px] text-[#0E1726] text-center">
                     No check-ins yet
                   </h2>
-                  <p className="font-['Inter'] font-normal text-[14px] leading-[23px] text-[#6B7590] text-center mt-[4px]">
+                  <p className="font-['Inter'] font-normal text-[14px] leading-[22.75px] tracking-[0px] text-[#6B7590] text-center mt-[4px]">
                     Attendees will appear here once they have been scanned in at the event entrance.
                   </p>
                 </div>
@@ -101,7 +101,7 @@ export default function AttendancePage() {
             <div className="pt-[8px]">
               <Link
                 href="/admin/check-in"
-                className="flex flex-row items-center justify-center gap-[8px] px-[24px] py-[14px] w-[262px] h-[52px] bg-gradient-to-br from-[#1C2E5A] to-[#2D4A82] shadow-[0px_4px_20px_rgba(28,46,90,0.3)] rounded-[16px] text-[#FFFFFF] font-['Chillax'] font-semibold text-[16px] leading-[24px] hover:opacity-95 transition"
+                className="flex flex-row items-center justify-center gap-[8px] px-[24px] py-[14px] w-[262px] h-[52px] bg-gradient-to-br from-[#1C2E5A] to-[#2D4A82] shadow-[0px_4px_20px_rgba(28,46,90,0.3)] rounded-[16px] text-[#FFFFFF] font-['Chillax'] font-semibold text-[16px] leading-[24px] tracking-[0px] text-center hover:opacity-95 transition"
               >
                 <ScanLine size={16} />
                 Go to Check-In Scanner
@@ -117,26 +117,26 @@ export default function AttendancePage() {
               </span>
               <div className="grid grid-cols-3 gap-[12px] w-full">
                 <div className="bg-[#EEF1F5] rounded-[16px] p-[12px] flex flex-col items-center justify-center h-[73px]">
-                  <span className="font-['Chillax'] font-bold text-[24px] leading-[32px] text-[#0E1726] text-center">
+                  <span className="font-['Inter'] font-semibold text-[24px] leading-[32px] tracking-[1px] text-[#0E1726] text-center">
                     {summary.total_registered}
                   </span>
-                  <span className="font-['Inter'] font-normal text-[10px] leading-[15px] text-[#6B7590] text-center mt-[2px]">
+                  <span className="font-['Inter'] font-normal text-[10px] leading-[15px] tracking-[0px] text-[#6B7590] text-center mt-[2px]">
                     Expected
                   </span>
                 </div>
                 <div className="bg-[#EEF1F5] rounded-[16px] p-[12px] flex flex-col items-center justify-center h-[73px]">
-                  <span className="font-['Chillax'] font-bold text-[24px] leading-[32px] text-[#1C2E5A] text-center">
+                  <span className="font-['Inter'] font-semibold text-[24px] leading-[32px] tracking-[1px] text-[#1C2E5A] text-center">
                     {summary.checked_in}
                   </span>
-                  <span className="font-['Inter'] font-normal text-[10px] leading-[15px] text-[#6B7590] text-center mt-[2px]">
+                  <span className="font-['Inter'] font-normal text-[10px] leading-[15px] tracking-[0px] text-[#6B7590] text-center mt-[2px]">
                     Checked In
                   </span>
                 </div>
                 <div className="bg-[#EEF1F5] rounded-[16px] p-[12px] flex flex-col items-center justify-center h-[73px]">
-                  <span className="font-['Chillax'] font-bold text-[24px] leading-[32px] text-[#6B7590] text-center">
+                  <span className="font-['Inter'] font-semibold text-[24px] leading-[32px] tracking-[1px] text-[#6B7590] text-center">
                     {summary.pending}
                   </span>
-                  <span className="font-['Inter'] font-normal text-[10px] leading-[15px] text-[#6B7590] text-center mt-[2px]">
+                  <span className="font-['Inter'] font-normal text-[10px] leading-[15px] tracking-[0px] text-[#6B7590] text-center mt-[2px]">
                     Pending
                   </span>
                 </div>
