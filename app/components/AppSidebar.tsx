@@ -4,30 +4,47 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { UserPlus, Calendar, Globe } from "lucide-react";
+import { UserPlus, Calendar, Globe, ScanLine, BarChart3 } from "lucide-react";
 
-const ALL_LINKS = [
-  { icon: UserPlus, label: "Register", href: "/register", exact: true, alwaysShow: true },
-  { icon: Calendar, label: "Programme", href: "/programme", exact: true, alwaysShow: false },
-  { icon: Globe, label: "Partners", href: "/partners", exact: false, alwaysShow: false },
+type NavRole = "Partner" | "OAK Staff" | "Coordination Team" | "Presenter" | "Observer";
+
+const PROGRAMME_ROLES: NavRole[] = ["OAK Staff", "Presenter", "Observer", "Coordination Team"];
+const COORDINATION_ONLY: NavRole[] = ["Coordination Team"];
+
+const ALL_LINKS: {
+  icon: typeof UserPlus;
+  label: string;
+  href: string;
+  exact: boolean;
+  roles: NavRole[] | null; // null = always visible
+}[] = [
+  { icon: UserPlus, label: "Register", href: "/register", exact: true, roles: null },
+  { icon: Calendar, label: "Programme", href: "/programme", exact: true, roles: PROGRAMME_ROLES },
+  { icon: Globe, label: "Partners", href: "/partners", exact: false, roles: PROGRAMME_ROLES },
+  { icon: ScanLine, label: "Check In", href: "/admin/check-in", exact: false, roles: COORDINATION_ONLY },
+  { icon: BarChart3, label: "Attendance", href: "/admin/attendance", exact: false, roles: COORDINATION_ONLY },
 ];
 
 export default function AppSidebar() {
   const pathname = usePathname();
   const [hasRegistered, setHasRegistered] = useState(false);
-  
+  const [role, setRole] = useState<string | null>(null);
+
   useEffect(() => {
     function sync() {
       setHasRegistered(localStorage.getItem("oak_registered") === "true");
+      setRole(localStorage.getItem("oak_role"));
     }
     sync();
     window.addEventListener("oak-registration-changed", sync);
     return () => window.removeEventListener("oak-registration-changed", sync);
   }, [pathname]);
 
-  const visibleLinks = ALL_LINKS.filter(
-    (link) => link.alwaysShow || hasRegistered
-  );
+  const visibleLinks = ALL_LINKS.filter((link) => {
+    if (link.roles === null) return true;
+    if (!hasRegistered || !role) return false;
+    return link.roles.includes(role as NavRole);
+  });
 
   return (
     <>
