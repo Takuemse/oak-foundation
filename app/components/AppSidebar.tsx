@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { UserPlus, Calendar, Globe, ScanLine, BarChart3 } from "lucide-react";
+import { UserPlus, Calendar, Globe, ScanLine, LayoutGrid } from "lucide-react";
 
 type NavRole = "Partner" | "OAK Staff" | "Coordination Team" | "Presenter" | "Observer";
 
@@ -22,7 +22,7 @@ const ALL_LINKS: {
   { icon: Calendar, label: "Programme", href: "/programme", exact: true, roles: PROGRAMME_ROLES },
   { icon: Globe, label: "Partners", href: "/partners", exact: false, roles: PROGRAMME_ROLES },
   { icon: ScanLine, label: "Check In", href: "/admin/check-in", exact: false, roles: COORDINATION_ONLY },
-  { icon: BarChart3, label: "Attendance", href: "/admin/attendance", exact: false, roles: COORDINATION_ONLY },
+  { icon: LayoutGrid, label: "Attendance", href: "/admin/attendance", exact: false, roles: COORDINATION_ONLY },
 ];
 
 export default function AppSidebar() {
