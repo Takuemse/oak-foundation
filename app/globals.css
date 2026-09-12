@@ -50,7 +50,8 @@ h1, h2, h3, h4, h5, h6 {
   width: 100% !important;
   height: 100% !important;
   border: none !important;
-  position: relative !important;
+  position: absolute !important;
+  inset: 0 !important;
 }
 
 #qr-reader video {
@@ -67,7 +68,8 @@ h1, h2, h3, h4, h5, h6 {
 
 #qr-reader__scan_region img,
 #qr-reader__dashboard,
-#qr-reader__status_span {
+#qr-reader__status_span,
+#qr-reader__header_background {
   display: none !important;
 }
 

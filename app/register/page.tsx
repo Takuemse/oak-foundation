@@ -73,7 +73,10 @@ export default function RegisterPage() {
         setError(data.message ?? "Registration failed. Please try again.");
         return;
       }
-
+      localStorage.setItem("oak_registered", "true");
+      localStorage.setItem("oak_role", data.attendee.role ?? form.role);
+      window.dispatchEvent(new Event("oak-registration-changed"));
+      
       if (form.role === "Partner") {
         setResult(data.attendee);
       } else if (form.role === "Coordination Team") {
@@ -108,13 +111,13 @@ export default function RegisterPage() {
 
   return (
     <div className="min-h-screen bg-[#F4F5F7] flex flex-col md:flex-row text-slate-800 font-sans">
-      {/* Desktop Sidebar */}
+      
       <div className="hidden md:block">
         <AppSidebar />
       </div>
 
-      {/* Mobile Top Header */}
-      <header className="md:hidden w-full h-[82px] bg-[#162E55] px-4 pt-[38px] pb-[16px] flex items-center gap-[12px]">
+      
+      <header className="md:hidden w-full h-[82px] bg-[#162E55] px-4 pt-[38px] pb-[16px] flex items-center justify-center gap-[12px] shrink-0">
         <div className="relative w-[50px] h-[28px] shrink-0 flex items-center justify-center">
           <Image
             src="/Logo-Oak-Foundation.svg.svg"
@@ -130,13 +133,13 @@ export default function RegisterPage() {
         </span>
       </header>
 
-      {/* Main Content Area */}
-      <main className="flex-1 px-4 py-6 md:px-8 md:py-10 max-w-[402px] md:max-w-[672px] mx-auto w-full flex flex-col gap-4">
+      
+      <main className="flex-1 px-4 py-6 md:px-8 md:py-10 max-w-full md:max-w-[672px] mx-auto w-full flex flex-col gap-4">
         {result ? (
           <RegistrationSuccess attendee={result} onRegisterAnother={registerAnother} />
         ) : (
           <>
-            {/* Header Banner */}
+          
             <div className="relative overflow-hidden w-full h-[167px] bg-[#162E55] rounded-[24px] p-6 shadow-[0px_1px_3px_rgba(28,46,90,0.05),0px_4px_16px_rgba(28,46,90,0.07)] flex flex-col justify-between">
               <div
                 className="pointer-events-none absolute w-[192px] h-[192px] -right-[26px] -top-[40px] rounded-full"
@@ -147,19 +150,18 @@ export default function RegisterPage() {
               />
 
               <div className="relative z-10 flex flex-col justify-between h-full">
-                <h1 className="font-['Chillax',sans-serif] font-bold text-[30px] leading-[37.5px] tracking-[0px] text-white pt-1">
+                <h1 className="font-['Chillax',sans-serif] font-bold text-[28px] md:text-[30px] leading-[34px] md:leading-[37.5px] tracking-[0px] text-white pt-1">
                   Partner <br />
                   Convening 2026
                 </h1>
-
                 <p className="font-['Inter',sans-serif] font-normal text-[14px] leading-[20px] tracking-[0px] text-white/50">
-                  Geneva · 9–11 March 2026
+                  Harare, Zimbabwe · 9–11 November 2026
                 </p>
               </div>
             </div>
 
-            {/* Stat Cards Grid */}
-            <div className="grid grid-cols-3 gap-3 w-full h-[98px]">
+        
+            <div className="grid grid-cols-3 gap-2 sm:gap-3 w-full">
               <StatCard
                 value="110+"
                 label="Attendees"
@@ -195,16 +197,16 @@ export default function RegisterPage() {
               </div>
             )}
 
-            {/* Registration Form Card */}
+            
             <form
               onSubmit={handleSubmit}
-              className="w-full bg-white rounded-[24px] p-5 shadow-[0px_1px_3px_rgba(28,46,90,0.05),0px_4px_16px_rgba(28,46,90,0.07)] border border-[rgba(28,46,90,0.1)] flex flex-col gap-4 text-left"
+              className="w-full bg-white rounded-[24px] p-4 sm:p-5 shadow-[0px_1px_3px_rgba(28,46,90,0.05),0px_4px_16px_rgba(28,46,90,0.07)] border border-[rgba(28,46,90,0.1)] flex flex-col gap-4 text-left"
             >
               <h2 className="font-['Chillax',sans-serif] font-semibold text-[18px] leading-[28px] tracking-[0px] text-[#0E1726]">
                 Registration Form
               </h2>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <Field label="First Name" required>
                   <input
                     required
@@ -306,7 +308,7 @@ export default function RegisterPage() {
                 </Field>
               </div>
 
-              {/* Privacy Consent */}
+              
               <label className="flex items-start gap-3 p-4 border border-[rgba(28,46,90,0.18)] rounded-[16px] cursor-pointer hover:bg-slate-50 transition">
                 <input
                   type="checkbox"
@@ -323,7 +325,7 @@ export default function RegisterPage() {
                 </span>
               </label>
 
-              {/* Action Button */}
+              
               <button
                 type="submit"
                 disabled={loading}
@@ -376,13 +378,13 @@ function Field({
 
 function StatCard({ value, label, icon }: { value: string; label: string; icon?: React.ReactNode }) {
   return (
-    <div className="bg-white rounded-[24px] p-4 h-full shadow-[0px_1px_3px_rgba(28,46,90,0.05),0px_4px_16px_rgba(28,46,90,0.07)] flex flex-col justify-between text-left border border-[rgba(28,46,90,0.1)]">
+    <div className="bg-white rounded-[20px] sm:rounded-[24px] p-3 sm:p-4 h-full shadow-[0px_1px_3px_rgba(28,46,90,0.05),0px_4px_16px_rgba(28,46,90,0.07)] flex flex-col justify-between text-left border border-[rgba(28,46,90,0.1)]">
       <div>{icon}</div>
-      <div>
-        <div className="font-['Chillax',sans-serif] font-bold text-[20px] leading-[20px] tracking-[0px] text-[#0E1726]">
+      <div className="mt-2">
+        <div className="font-['Chillax',sans-serif] font-bold text-[18px] sm:text-[20px] leading-[20px] tracking-[0px] text-[#0E1726]">
           {value}
         </div>
-        <div className="font-['Inter',sans-serif] font-normal text-[12px] leading-[16px] tracking-[0px] text-[#6B7590] mt-1">
+        <div className="font-['Inter',sans-serif] font-normal text-[11px] sm:text-[12px] leading-[16px] tracking-[0px] text-[#6B7590] mt-0.5 truncate">
           {label}
         </div>
       </div>
@@ -421,7 +423,7 @@ function CustomRoleDropdown({
           {value || "Select your role"}
         </span>
         <svg
-          className={`w-[14px] h-[14px] text-[#6B7590] transition-transform duration-200 ${
+          className={`w-[14px] h-[14px] text-[#6B7590] transition-transform duration-200 shrink-0 ${
             isOpen ? "rotate-180" : ""
           }`}
           fill="none"
@@ -518,22 +520,22 @@ function RegistrationSuccess({
             {attendee.firstName}!
           </h1>
           {attendee.email && (
-            <span className="font-['Inter',sans-serif] font-normal text-[12px] leading-[18px] text-white/50 mt-1">
+            <span className="font-['Inter',sans-serif] font-normal text-[12px] leading-[18px] text-white/50 mt-1 truncate max-w-[220px] sm:max-w-none">
               {attendee.email}
             </span>
           )}
         </div>
       </div>
 
-      <div className="w-full bg-white rounded-[24px] p-8 shadow-[0px_1px_3px_rgba(28,46,90,0.05),0px_4px_16px_rgba(28,46,90,0.07)] border border-[rgba(28,46,90,0.1)] flex flex-col items-center text-center">
+      <div className="w-full bg-white rounded-[24px] p-6 sm:p-8 shadow-[0px_1px_3px_rgba(28,46,90,0.05),0px_4px_16px_rgba(28,46,90,0.07)] border border-[rgba(28,46,90,0.1)] flex flex-col items-center text-center">
         <span className="font-['Inter',sans-serif] font-semibold text-[12px] leading-[16px] tracking-[0.3px] text-[#6B7590] uppercase mb-6">
           Your Entry Pass
         </span>
 
-        <div ref={canvasWrapperRef} className="p-3 bg-white rounded-2xl shadow-sm border border-slate-100 mb-5">
+        <div ref={canvasWrapperRef} className="p-3 bg-white rounded-2xl shadow-sm border border-slate-100 mb-5 max-w-full overflow-hidden">
           <QRCodeCanvas
             value={attendee.qrToken}
-            size={200}
+            size={180}
             bgColor="#FFFFFF"
             fgColor="#000000"
             level="H"
@@ -541,7 +543,7 @@ function RegistrationSuccess({
           />
         </div>
 
-        <span className="font-mono font-medium text-[13px] leading-[18px] text-[#6B7590] tracking-wider uppercase mb-1">
+        <span className="font-mono font-medium text-[12px] sm:text-[13px] leading-[18px] text-[#6B7590] tracking-wider uppercase mb-1 break-all">
           {attendee.qrToken}
         </span>
         <span className="font-['Inter',sans-serif] font-normal text-[12px] leading-[16px] text-[#A0AEC0]">
@@ -559,8 +561,8 @@ function RegistrationSuccess({
           <DetailRow label="Organisation" value={attendee.organizationName || "—"} />
           <DetailRow label="Role" value={attendee.role || "—"} />
           <DetailRow label="Email" value={attendee.email || "—"} />
-          <DetailRow label="Event Dates" value="9–11 March 2026" />
-          <DetailRow label="Location" value="Geneva, Switzerland" />
+          <DetailRow label="Event Dates" value="9–11 November 2026" />
+          <DetailRow label="Location" value="Harare, Zimbabwe" />
         </div>
       </div>
 
@@ -590,11 +592,11 @@ function RegistrationSuccess({
 
 function DetailRow({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex justify-between items-center py-1 border-b border-slate-100 last:border-0 last:pb-0">
-      <span className="font-['Inter',sans-serif] font-normal text-[13px] leading-[18px] text-[#6B7590]">
+    <div className="flex justify-between items-center py-1 border-b border-slate-100 last:border-0 last:pb-0 gap-2">
+      <span className="font-['Inter',sans-serif] font-normal text-[13px] leading-[18px] text-[#6B7590] shrink-0">
         {label}
       </span>
-      <span className="font-['Inter',sans-serif] font-medium text-[13px] leading-[18px] text-[#0E1726] text-right">
+      <span className="font-['Inter',sans-serif] font-medium text-[13px] leading-[18px] text-[#0E1726] text-right truncate">
         {value}
       </span>
     </div>

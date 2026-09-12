@@ -81,6 +81,16 @@ export default function CheckInPage() {
     setLoading(true);
     setResult(null);
 
+    // Safely stop scanner prior to network request/result view swap
+    if (scannerRef.current && scannerRef.current.isScanning) {
+      try {
+        await scannerRef.current.stop();
+        scannerRef.current.clear();
+      } catch {
+        // Suppress teardown race conditions
+      }
+    }
+
     try {
       const res = await fetch("/api/check-in", {
         method: "POST",
@@ -98,17 +108,20 @@ export default function CheckInPage() {
     }
   }
 
+  // Camera initialization effect
   useEffect(() => {
-    if (result) return;
+    if (result) return; // Do not boot camera if a result card is displayed
 
+    let isMounted = true;
     let html5QrcodeScanner: Html5Qrcode | null = null;
-    let isCleaningUp = false;
 
     const startScanner = async () => {
+      // Delay slightly to ensure DOM element exists after state change
+      await new Promise((r) => setTimeout(r, 150));
       const container = document.getElementById(SCANNER_ELEMENT_ID);
-      if (!container) return;
-      container.innerHTML = "";
+      if (!container || !isMounted) return;
 
+      container.innerHTML = "";
       const scanner = new Html5Qrcode(SCANNER_ELEMENT_ID);
       html5QrcodeScanner = scanner;
       scannerRef.current = scanner;
@@ -118,36 +131,25 @@ export default function CheckInPage() {
           { facingMode: "environment" },
           { fps: 10, qrbox: { width: 208, height: 208 } },
           (decodedText) => {
-            if (isCleaningUp) return;
-            submitCheckIn(decodedText);
+            if (isMounted && !isSubmittingRef.current) {
+              submitCheckIn(decodedText);
+            }
           },
           () => {}
         );
-
-        if (isCleaningUp) {
-          await scanner.stop();
-          scanner.clear();
-        }
       } catch (err) {
-        if (isCleaningUp) return;
-
-        if (
-          err instanceof DOMException &&
-          (err.name === "AbortError" || err.name === "NotAllowedError")
-        ) {
+        if (!isMounted) return;
+        if (err instanceof DOMException && (err.name === "AbortError" || err.name === "NotAllowedError")) {
           return;
         }
-
-        setCameraError(
-          "Camera unavailable. Use manual entry or check browser permissions."
-        );
+        setCameraError("Camera unavailable. Check permissions or use manual entry.");
       }
     };
 
     startScanner();
 
     return () => {
-      isCleaningUp = true;
+      isMounted = false;
       if (html5QrcodeScanner) {
         if (html5QrcodeScanner.isScanning) {
           html5QrcodeScanner
@@ -158,7 +160,7 @@ export default function CheckInPage() {
           try {
             html5QrcodeScanner.clear();
           } catch {
-            // Container unmounted
+            // Safe fallback
           }
         }
       }
@@ -177,43 +179,10 @@ export default function CheckInPage() {
 
   return (
     <div className="min-h-screen bg-[#F4F6F8] flex flex-col md:flex-row text-slate-800 font-sans justify-center">
-      {/* Global CSS Overrides for html5-qrcode canvas/video setup */}
-      <style jsx global>{`
-        #qr-reader {
-          width: 100% !important;
-          height: 100% !important;
-          border: none !important;
-          position: relative !important;
-        }
-        #qr-reader video {
-          width: 100% !important;
-          height: 100% !important;
-          object-fit: cover !important;
-        }
-        #qr-reader__scan_region {
-          display: flex !important;
-          align-items: center !important;
-          justify-content: center !important;
-        }
-        #qr-reader__scan_region img,
-        #qr-reader__dashboard,
-        #qr-reader__status_span,
-        #qr-reader__shaded_region {
-          display: none !important;
-        }
-        #qr-reader canvas {
-          display: none !important;
-        }
-      `}</style>
-
-      {/* Renders Mobile Top Header (<md) and Desktop Side Nav (>=md) */}
       <AppSidebar />
 
-      {/* Main Layout Area centered with proper spacing matching side/top nav */}
       <div className="flex-1 flex justify-center">
         <main className="w-full max-w-[672px] min-h-screen px-[16px] md:px-[32px] py-[24px] md:py-[40px] flex flex-col items-start">
-          
-          {/* Container: Heading & Subtitle */}
           <div className="w-full max-w-[608px] flex flex-col items-start p-0 shrink-0 mb-[20px]">
             <h1 className="font-chillax font-bold text-[22px] md:text-[24px] leading-[28px] md:leading-[32px] text-[#0E1726]">
               Event Check-In
@@ -223,7 +192,6 @@ export default function CheckInPage() {
             </p>
           </div>
 
-          {/* Success Card Result */}
           {result && result.success && result.attendee && !result.attendee.already_checked_in && (
             <ResultCard onDismiss={reset}>
               <ResultHeader
@@ -236,7 +204,6 @@ export default function CheckInPage() {
             </ResultCard>
           )}
 
-          {/* Warning Card Result */}
           {result && result.success && result.attendee && result.attendee.already_checked_in && (
             <ResultCard onDismiss={reset}>
               <ResultHeader
@@ -249,7 +216,6 @@ export default function CheckInPage() {
             </ResultCard>
           )}
 
-          {/* Error Card Result */}
           {result && !result.success && (
             <ResultCard onDismiss={reset}>
               <ResultHeader
@@ -292,156 +258,122 @@ export default function CheckInPage() {
             </ResultCard>
           )}
 
-          {/* Main Camera View & Form Controls */}
-          {!result && (
-            <div className="w-full max-w-[608px] flex flex-col items-start p-0">
-              
-              {/* Container: Scanner Shell */}
-              <div className="w-full max-w-[608px] bg-[#0E1726] shadow-[0px_1px_3px_rgba(28,46,90,0.05),0px_4px_16px_rgba(28,46,90,0.07)] rounded-[24px] flex flex-col items-start overflow-hidden relative shrink-0">
-                
-                {/* Camera Frame Container - Responsive Aspect Ratio on Mobile */}
-                <div className="relative w-full aspect-square md:h-[608px] shrink-0 bg-[#0E1726] overflow-hidden">
-                  
-                  {/* HTML5 QR Code Mount */}
-                  <div
-                    key={SCANNER_ELEMENT_ID}
-                    id={SCANNER_ELEMENT_ID}
-                    className="absolute inset-0 z-0"
-                  />
+          <div className={`w-full max-w-[608px] flex-col items-start p-0 ${result ? "hidden" : "flex"}`}>
+            <div className="w-full max-w-[608px] bg-[#0E1726] shadow-[0px_1px_3px_rgba(28,46,90,0.05),0px_4px_16px_rgba(28,46,90,0.07)] rounded-[24px] flex flex-col items-start overflow-hidden relative shrink-0">
+              <div className="relative w-full aspect-square md:h-[608px] shrink-0 bg-[#0E1726] overflow-hidden">
+                <div id={SCANNER_ELEMENT_ID} className="absolute inset-0 z-0" />
 
-                  {/* Grid Overlay */}
-                  <div
-                    className="absolute inset-0 pointer-events-none z-10 opacity-[0.07]"
-                    style={{
-                      background:
-                        "radial-gradient(70.71% 70.71% at 50% 50%, rgba(168, 187, 206, 0.8) 0.16%, rgba(0, 0, 0, 0) 0.16%)",
-                    }}
-                  />
+                <div
+                  className="absolute inset-0 pointer-events-none z-10 opacity-[0.07]"
+                  style={{
+                    background:
+                      "radial-gradient(70.71% 70.71% at 50% 50%, rgba(168, 187, 206, 0.8) 0.16%, rgba(0, 0, 0, 0) 0.16%)",
+                  }}
+                />
 
-                  {/* Centered Reticle Frame Overlay */}
-                  <div className="absolute inset-0 z-20 pointer-events-none flex items-center justify-center">
-                    <div className="relative w-[208px] h-[208px]">
-                      {/* Glow Overlay */}
-                      <div
-                        className="absolute -inset-1 rounded-full opacity-[0.44] pointer-events-none"
-                        style={{
-                          background:
-                            "radial-gradient(70.71% 70.71% at 50% 50%, rgba(168, 187, 206, 0.12) 0%, rgba(168, 187, 206, 0) 70%)",
-                        }}
-                      />
-                      {/* Reticle Brackets */}
-                      <div className="absolute top-0 left-0 w-[32px] h-[32px] border-t-2 border-l-2 border-[#A8BBCE] rounded-tl-[12px]" />
-                      <div className="absolute top-0 right-0 w-[32px] h-[32px] border-t-2 border-r-2 border-[#A8BBCE] rounded-tr-[12px]" />
-                      <div className="absolute bottom-0 left-0 w-[32px] h-[32px] border-b-2 border-l-2 border-[#A8BBCE] rounded-bl-[12px]" />
-                      <div className="absolute bottom-0 right-0 w-[32px] h-[32px] border-b-2 border-r-2 border-[#A8BBCE] rounded-br-[12px]" />
-                    </div>
-                  </div>
-
-                  {/* Position text */}
-                  <p className="absolute z-20 pointer-events-none bottom-4 left-0 right-0 font-['Inter'] font-normal text-[12px] leading-[16px] tracking-[0.3px] text-[#A8BBCE]/50 text-center px-4">
-                    Position QR code within the frame
-                  </p>
-
-                  {/* Camera Fallback Notice */}
-                  {cameraError && (
-                    <div className="absolute inset-0 z-30 flex items-center justify-center px-6 text-center bg-[#0E1726]/95">
-                      <p className="text-xs text-slate-300 leading-relaxed">{cameraError}</p>
-                    </div>
-                  )}
-                </div>
-
-                {/* Status Bar Container */}
-                <div className="w-full h-[65px] px-[16px] py-[16px] gap-[12px] flex flex-row items-center border-t border-white/10 shrink-0 bg-[#0E1726]">
-                  <div className="w-[32px] h-[32px] rounded-full bg-white/10 flex items-center justify-center shrink-0">
-                    <ScanLine size={14} className="text-[#A8BBCE]/70" />
-                  </div>
-
-                  <div className="flex-1 flex flex-col items-start justify-center p-0">
-                    <span className="font-['Inter'] font-normal text-[12px] leading-[16px] text-[#A8BBCE]/45 truncate w-full">
-                      {loading ? "Checking in…" : "Hold camera steady · Auto-scans in 1–2 seconds"}
-                    </span>
-                  </div>
-                </div>
-
-              </div>
-
-              {/* Container: Simulate QR Scan Card */}
-              <div className="w-full max-w-[608px] bg-white border border-[rgba(28,46,90,0.1)] shadow-[0px_1px_3px_rgba(28,46,90,0.05),0px_4px_16px_rgba(28,46,90,0.07)] rounded-[24px] p-[20px] flex flex-col items-start mt-[16px] shrink-0">
-                <span className="w-full font-['Inter'] font-semibold text-[10px] leading-[15px] tracking-[1px] uppercase text-[#6B7590] mb-[12px] text-left">
-                  Simulate QR Scan
-                </span>
-
-                <div className="w-full flex flex-col items-start gap-[8px]">
-                  {MOCK_SIMULATIONS.map((item) => (
-                    <button
-                      key={item.token}
-                      type="button"
-                      onClick={() => submitCheckIn(item.token)}
-                      disabled={loading}
-                      className="w-full min-h-[62px] p-[12px] gap-[12px] border border-[rgba(28,46,90,0.1)] rounded-[16px] flex flex-row items-center hover:bg-slate-50 transition text-left shrink-0"
-                    >
-                      <div className="w-[36px] h-[36px] bg-[#162E55] rounded-[12px] flex items-center justify-center shrink-0">
-                        <span className="font-['Inter'] font-bold text-[12px] leading-[16px] text-white">
-                          {item.initials}
-                        </span>
-                      </div>
-
-                      <div className="flex-1 flex flex-col items-start justify-center min-w-0">
-                        <span className="font-['Inter'] font-medium text-[14px] leading-[20px] text-[#0E1726] truncate w-full">
-                          {item.name}
-                        </span>
-                        <span className="font-['Consolas'] font-normal text-[10px] leading-[15px] text-[#6B7590] truncate w-full">
-                          {item.token}
-                        </span>
-                      </div>
-
-                      <div
-                        className={`px-[10px] py-[4px] gap-[4px] flex flex-row items-center border rounded-[100px] shrink-0 ${item.badgeBg} ${item.badgeBorder}`}
-                      >
-                        <span className={`w-[6px] h-[6px] rounded-full ${item.dotBg}`} />
-                        <span
-                          className={`font-['Inter'] font-semibold text-[11px] leading-[16px] tracking-[0.22px] ${item.textColor}`}
-                        >
-                          {item.role}
-                        </span>
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Container: Manual Code Entry Card */}
-              <form
-                onSubmit={handleManualSubmit}
-                className="w-full max-w-[608px] bg-white border border-[rgba(28,46,90,0.1)] shadow-[0px_1px_3px_rgba(28,46,90,0.05),0px_4px_16px_rgba(28,46,90,0.07)] rounded-[24px] p-[20px] flex flex-col items-start mt-[16px] shrink-0"
-              >
-                <label className="w-full font-['Inter'] font-semibold text-[10px] leading-[15px] tracking-[1px] uppercase text-[#6B7590] text-left">
-                  Manual Code Entry
-                </label>
-
-                <div className="w-full pt-[12px] flex flex-row items-center gap-[8px]">
-                  <div className="flex-1 h-[52.5px] px-[16px] py-[14px] bg-[#EEF1F5] rounded-[14px] flex items-center">
-                    <input
-                      type="text"
-                      value={qrToken}
-                      onChange={(e) => setQrToken(e.target.value)}
-                      placeholder="OAK-2026-XXXX-XXXX"
-                      className="w-full bg-transparent font-['Inter'] font-normal text-[15px] leading-[18px] text-[#0E1726] placeholder-[#6B7590] focus:outline-none border-0 p-0"
+                <div className="absolute inset-0 z-20 pointer-events-none flex items-center justify-center">
+                  <div className="relative w-[208px] h-[208px]">
+                    <div
+                      className="absolute -inset-1 rounded-full opacity-[0.44] pointer-events-none"
+                      style={{
+                        background:
+                          "radial-gradient(70.71% 70.71% at 50% 50%, rgba(168, 187, 206, 0.12) 0%, rgba(168, 187, 206, 0) 70%)",
+                      }}
                     />
+                    <div className="absolute top-0 left-0 w-[32px] h-[32px] border-t-2 border-l-2 border-[#A8BBCE] rounded-tl-[12px]" />
+                    <div className="absolute top-0 right-0 w-[32px] h-[32px] border-t-2 border-r-2 border-[#A8BBCE] rounded-tr-[12px]" />
+                    <div className="absolute bottom-0 left-0 w-[32px] h-[32px] border-b-2 border-l-2 border-[#A8BBCE] rounded-bl-[12px]" />
+                    <div className="absolute bottom-0 right-0 w-[32px] h-[32px] border-b-2 border-r-2 border-[#A8BBCE] rounded-br-[12px]" />
                   </div>
-
-                  <button
-                    type="submit"
-                    disabled={loading || !qrToken.trim()}
-                    className="w-[90px] h-[52.5px] bg-[#162E55] shadow-[0px_4px_20px_rgba(28,46,90,0.3)] rounded-[16px] flex items-center justify-center font-chillax font-semibold text-[16px] leading-[24px] text-white hover:bg-[#0f213f] transition disabled:opacity-40 shrink-0"
-                  >
-                    {loading ? "…" : "Check"}
-                  </button>
                 </div>
-              </form>
 
+                <p className="absolute z-20 pointer-events-none bottom-4 left-0 right-0 font-['Inter'] font-normal text-[12px] leading-[16px] tracking-[0.3px] text-[#A8BBCE]/50 text-center px-4">
+                  Position QR code within the frame
+                </p>
+
+                {cameraError && (
+                  <div className="absolute inset-0 z-30 flex items-center justify-center px-6 text-center bg-[#0E1726]/95">
+                    <p className="text-xs text-slate-300 leading-relaxed">{cameraError}</p>
+                  </div>
+                )}
+              </div>
+
+              <div className="w-full h-[65px] px-[16px] py-[16px] gap-[12px] flex flex-row items-center border-t border-white/10 shrink-0 bg-[#0E1726]">
+                <div className="w-[32px] h-[32px] rounded-full bg-white/10 flex items-center justify-center shrink-0">
+                  <ScanLine size={14} className="text-[#A8BBCE]/70" />
+                </div>
+                <div className="flex-1 flex flex-col items-start justify-center p-0">
+                  <span className="font-['Inter'] font-normal text-[12px] leading-[16px] text-[#A8BBCE]/45 truncate w-full">
+                    {loading ? "Checking in…" : "Hold camera steady · Auto-scans in 1–2 seconds"}
+                  </span>
+                </div>
+              </div>
             </div>
-          )}
+
+            <div className="w-full max-w-[608px] bg-white border border-[rgba(28,46,90,0.1)] shadow-[0px_1px_3px_rgba(28,46,90,0.05),0px_4px_16px_rgba(28,46,90,0.07)] rounded-[24px] p-[20px] flex flex-col items-start mt-[16px] shrink-0">
+              <span className="w-full font-['Inter'] font-semibold text-[10px] leading-[15px] tracking-[1px] uppercase text-[#6B7590] mb-[12px] text-left">
+                Simulate QR Scan
+              </span>
+              <div className="w-full flex flex-col items-start gap-[8px]">
+                {MOCK_SIMULATIONS.map((item) => (
+                  <button
+                    key={item.token}
+                    type="button"
+                    onClick={() => submitCheckIn(item.token)}
+                    disabled={loading}
+                    className="w-full min-h-[62px] p-[12px] gap-[12px] border border-[rgba(28,46,90,0.1)] rounded-[16px] flex flex-row items-center hover:bg-slate-50 transition text-left shrink-0"
+                  >
+                    <div className="w-[36px] h-[36px] bg-[#162E55] rounded-[12px] flex items-center justify-center shrink-0">
+                      <span className="font-['Inter'] font-bold text-[12px] leading-[16px] text-white">
+                        {item.initials}
+                      </span>
+                    </div>
+                    <div className="flex-1 flex flex-col items-start justify-center min-w-0">
+                      <span className="font-['Inter'] font-medium text-[14px] leading-[20px] text-[#0E1726] truncate w-full">
+                        {item.name}
+                      </span>
+                      <span className="font-['Consolas'] font-normal text-[10px] leading-[15px] text-[#6B7590] truncate w-full">
+                        {item.token}
+                      </span>
+                    </div>
+                    <div className={`px-[10px] py-[4px] gap-[4px] flex flex-row items-center border rounded-[100px] shrink-0 ${item.badgeBg} ${item.badgeBorder}`}>
+                      <span className={`w-[6px] h-[6px] rounded-full ${item.dotBg}`} />
+                      <span className={`font-['Inter'] font-semibold text-[11px] leading-[16px] tracking-[0.22px] ${item.textColor}`}>
+                        {item.role}
+                      </span>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <form
+              onSubmit={handleManualSubmit}
+              className="w-full max-w-[608px] bg-white border border-[rgba(28,46,90,0.1)] shadow-[0px_1px_3px_rgba(28,46,90,0.05),0px_4px_16px_rgba(28,46,90,0.07)] rounded-[24px] p-[20px] flex flex-col items-start mt-[16px] shrink-0"
+            >
+              <label className="w-full font-['Inter'] font-semibold text-[10px] leading-[15px] tracking-[1px] uppercase text-[#6B7590] text-left">
+                Manual Code Entry
+              </label>
+              <div className="w-full pt-[12px] flex flex-row items-center gap-[8px]">
+                <div className="flex-1 h-[52.5px] px-[16px] py-[14px] bg-[#EEF1F5] rounded-[14px] flex items-center">
+                  <input
+                    type="text"
+                    value={qrToken}
+                    onChange={(e) => setQrToken(e.target.value)}
+                    placeholder="OAK-2026-XXXX-XXXX"
+                    className="w-full bg-transparent font-['Inter'] font-normal text-[15px] leading-[18px] text-[#0E1726] placeholder-[#6B7590] focus:outline-none border-0 p-0"
+                  />
+                </div>
+                <button
+                  type="submit"
+                  disabled={loading || !qrToken.trim()}
+                  className="w-[90px] h-[52.5px] bg-[#162E55] shadow-[0px_4px_20px_rgba(28,46,90,0.3)] rounded-[16px] flex items-center justify-center font-chillax font-semibold text-[16px] leading-[24px] text-white hover:bg-[#0f213f] transition disabled:opacity-40 shrink-0"
+                >
+                  {loading ? "…" : "Check"}
+                </button>
+              </div>
+            </form>
+          </div>
         </main>
       </div>
     </div>
@@ -463,46 +395,23 @@ function ResultCard({ onDismiss, children }: { onDismiss: () => void; children: 
   );
 }
 
-function ResultHeader({
-  tone,
-  title,
-  subtitle,
-}: {
-  tone: "success" | "warning" | "error";
-  title: string;
-  subtitle: string;
-}) {
+function ResultHeader({ tone, title, subtitle }: { tone: "success" | "warning" | "error"; title: string; subtitle: string }) {
   const isSuccess = tone === "success";
   const isWarning = tone === "warning";
-
-  const gradientClass = isSuccess
-    ? "bg-gradient-to-r from-[#059669] to-[#10B981]"
-    : isWarning
-    ? "bg-gradient-to-r from-[#D97706] to-[#F59E0B]"
-    : "bg-gradient-to-r from-[#DC2626] to-[#EF4444]";
-
+  const gradientClass = isSuccess ? "bg-gradient-to-r from-[#059669] to-[#10B981]" : isWarning ? "bg-gradient-to-r from-[#D97706] to-[#F59E0B]" : "bg-gradient-to-r from-[#DC2626] to-[#EF4444]";
   const label = isSuccess ? "CHECKED IN SUCCESSFULLY" : isWarning ? "ALREADY CHECKED IN" : "CHECK-IN FAILED";
 
   return (
     <div className={`w-full rounded-[24px] p-6 relative overflow-hidden text-white shadow-sm ${gradientClass}`}>
       <div className="absolute -top-8 -right-8 w-40 h-40 bg-white/10 rounded-full pointer-events-none blur-xl" />
-
       <div className="flex items-center gap-4 relative z-10">
         <div className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center shrink-0">
-          {isSuccess || isWarning ? (
-            <CheckCircle2 className="w-6 h-6 text-white" />
-          ) : (
-            <XCircle className="w-6 h-6 text-white" />
-          )}
+          {isSuccess || isWarning ? <CheckCircle2 className="w-6 h-6 text-white" /> : <XCircle className="w-6 h-6 text-white" />}
         </div>
         <div className="flex flex-col text-left min-w-0">
-          <span className="font-['Inter'] font-semibold text-[10px] leading-[14px] tracking-[1px] text-white/80 uppercase">
-            {label}
-          </span>
+          <span className="font-['Inter'] font-semibold text-[10px] leading-[14px] tracking-[1px] text-white/80 uppercase">{label}</span>
           <h2 className="font-chillax font-bold text-[18px] md:text-[20px] leading-[24px] md:leading-[28px] text-white mt-0.5 truncate">{title}</h2>
-          <p className="font-['Inter'] font-normal text-[12px] leading-[16px] text-white/90 mt-1 truncate">
-            {subtitle}
-          </p>
+          <p className="font-['Inter'] font-normal text-[12px] leading-[16px] text-white/90 mt-1 truncate">{subtitle}</p>
         </div>
       </div>
     </div>
@@ -511,7 +420,6 @@ function ResultHeader({
 
 function AttendeeSummary({ attendee }: { attendee: NonNullable<CheckInResult["attendee"]> }) {
   const initials = `${attendee.first_name?.[0] ?? ""}${attendee.last_name?.[0] ?? ""}`.toUpperCase();
-
   return (
     <div className="w-full bg-white rounded-[24px] border border-[rgba(28,46,90,0.1)] p-6 shadow-sm flex flex-col gap-5 text-left">
       <div className="flex items-center justify-between gap-2">
@@ -520,42 +428,25 @@ function AttendeeSummary({ attendee }: { attendee: NonNullable<CheckInResult["at
             {initials}
           </div>
           <div className="flex flex-col min-w-0">
-            <h3 className="font-['Inter'] font-semibold text-[16px] leading-[22px] text-[#0E1726] truncate">
-              {attendee.first_name} {attendee.last_name}
-            </h3>
-            <span className="font-['Inter'] font-normal text-[13px] leading-[18px] text-[#6B7590] truncate">
-              {attendee.organization_name ?? "No Organization"}
-            </span>
+            <h3 className="font-['Inter'] font-semibold text-[16px] leading-[22px] text-[#0E1726] truncate">{attendee.first_name} {attendee.last_name}</h3>
+            <span className="font-['Inter'] font-normal text-[13px] leading-[18px] text-[#6B7590] truncate">{attendee.organization_name ?? "No Organization"}</span>
           </div>
         </div>
-
         {attendee.role && (
           <div className="px-3 py-1 bg-[#EEF1F9] border border-[#C5CFDF] rounded-full flex items-center gap-1.5 shrink-0">
             <span className="w-1.5 h-1.5 rounded-full bg-[#1C2E5A]" />
-            <span className="font-['Inter'] font-semibold text-[11px] leading-[16px] text-[#1C2E5A]">
-              {attendee.role}
-            </span>
+            <span className="font-['Inter'] font-semibold text-[11px] leading-[16px] text-[#1C2E5A]">{attendee.role}</span>
           </div>
         )}
       </div>
-
       <div className="grid grid-cols-2 gap-3 pt-1">
         <div className="bg-[#EEF1F5] rounded-[16px] p-3.5 flex flex-col">
-          <span className="font-['Inter'] font-semibold text-[10px] leading-[14px] tracking-[0.5px] uppercase text-[#6B7590]">
-            Next Session
-          </span>
-          <span className="font-['Inter'] font-medium text-[13px] leading-[18px] text-[#0E1726] mt-1 truncate">
-            Opening Plenary
-          </span>
+          <span className="font-['Inter'] font-semibold text-[10px] leading-[14px] tracking-[0.5px] uppercase text-[#6B7590]">Next Session</span>
+          <span className="font-['Inter'] font-medium text-[13px] leading-[18px] text-[#0E1726] mt-1 truncate">Opening Plenary</span>
         </div>
-
         <div className="bg-[#EEF1F5] rounded-[16px] p-3.5 flex flex-col">
-          <span className="font-['Inter'] font-semibold text-[10px] leading-[14px] tracking-[0.5px] uppercase text-[#6B7590]">
-            Venue
-          </span>
-          <span className="font-['Inter'] font-medium text-[13px] leading-[18px] text-[#0E1726] mt-1 truncate">
-            Main Hall A
-          </span>
+          <span className="font-['Inter'] font-semibold text-[10px] leading-[14px] tracking-[0.5px] uppercase text-[#6B7590]">Venue</span>
+          <span className="font-['Inter'] font-medium text-[13px] leading-[18px] text-[#0E1726] mt-1 truncate">Main Hall A</span>
         </div>
       </div>
     </div>
@@ -571,19 +462,14 @@ function LiveEventStatusCard() {
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#00BC7D] opacity-75" />
             <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-[#00BC7D]" />
           </span>
-          <span className="font-['Inter'] font-medium text-[13px] text-[#0E1726]">
-            Opening Plenary starting at 09:30
-          </span>
+          <span className="font-['Inter'] font-medium text-[13px] text-[#0E1726]">Opening Plenary starting at 09:30</span>
         </div>
       </div>
-
       <div className="flex flex-col gap-1.5">
         <div className="w-full bg-[#EEF1F5] h-2 rounded-full overflow-hidden">
           <div className="bg-gradient-to-r from-[#1C2E5A] to-[#10B981] h-full w-[67%] rounded-full transition-all duration-500" />
         </div>
-        <span className="font-['Inter'] font-normal text-[11px] leading-[16px] text-[#6B7590]">
-          74 of 110 attendees checked in · Main Hall A
-        </span>
+        <span className="font-['Inter'] font-normal text-[11px] leading-[16px] text-[#6B7590]">74 of 110 attendees checked in · Main Hall A</span>
       </div>
     </div>
   );

@@ -15,9 +15,14 @@ const ALL_LINKS = [
 export default function AppSidebar() {
   const pathname = usePathname();
   const [hasRegistered, setHasRegistered] = useState(false);
-
+  
   useEffect(() => {
-    setHasRegistered(localStorage.getItem("oak_registered") === "true");
+    function sync() {
+      setHasRegistered(localStorage.getItem("oak_registered") === "true");
+    }
+    sync();
+    window.addEventListener("oak-registration-changed", sync);
+    return () => window.removeEventListener("oak-registration-changed", sync);
   }, [pathname]);
 
   const visibleLinks = ALL_LINKS.filter(
@@ -36,7 +41,7 @@ export default function AppSidebar() {
           className="w-[85px] h-[38px] object-contain brightness-0 invert"
         />
         <div className="h-[28px] w-[1px] bg-white/20 my-auto" />
-        <span className="font-sans font-semibold text-[13px] leading-[18px] tracking-[1.2px] text-white uppercase">
+        <span className="font-['Inter',sans-serif] font-semibold text-[13px] leading-[18px] tracking-[1.2px] text-white uppercase">
           Partner Convening 2026
         </span>
       </header>
@@ -53,7 +58,7 @@ export default function AppSidebar() {
               className="w-[85px] h-[53px] object-contain"
             />
             <div className="pt-3">
-              <span className="font-sans font-semibold text-[12px] leading-[16px] tracking-[1.2px] text-[#6B7590] uppercase block">
+              <span className="font-['Inter',sans-serif] font-semibold text-[12px] leading-[16px] tracking-[1.2px] text-[#6B7590] uppercase block">
                 Partner Convening 2026
               </span>
             </div>
@@ -68,8 +73,8 @@ export default function AppSidebar() {
                   href={href}
                   className={`flex items-center gap-3 px-4 py-3 rounded-[16px] transition duration-150 ${
                     active
-                      ? "bg-[#162E55] text-white shadow-[0px_4px_20px_rgba(28,46,90,0.3)] font-semibold text-[14px] leading-[20px]"
-                      : "text-[#6B7590] hover:bg-[#EEF1F5] hover:text-[#0E1726] font-medium text-[14px] leading-[20px]"
+                      ? "bg-[#162E55] text-white shadow-[0px_4px_20px_rgba(28,46,90,0.3)] font-['Inter',sans-serif] font-semibold text-[14px] leading-[20px]"
+                      : "text-[#6B7590] hover:bg-[#EEF1F5] hover:text-[#0E1726] font-['Inter',sans-serif] font-medium text-[14px] leading-[20px]"
                   }`}
                 >
                   <Icon className="w-[18px] h-[18px]" strokeWidth={2} />
@@ -85,10 +90,10 @@ export default function AppSidebar() {
             <Globe className="w-[14px] h-[14px] text-[#A8BBCE]" />
           </div>
           <div className="flex flex-col">
-            <span className="font-sans font-semibold text-[12px] leading-[16px] text-[#0E1726]">
+            <span className="font-['Inter',sans-serif] font-semibold text-[12px] leading-[16px] tracking-[0px] text-[#0E1726]">
               Harare, Zimbabwe
             </span>
-            <span className="font-sans font-normal text-[10px] leading-[15px] text-[#6B7590]">
+            <span className="font-['Inter',sans-serif] font-normal text-[10px] leading-[15px] tracking-[0px] text-[#6B7590]">
               9–11 November 2026
             </span>
           </div>

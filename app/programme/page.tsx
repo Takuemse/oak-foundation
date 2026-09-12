@@ -1,46 +1,72 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { 
-  FileText, 
-  Image as ImageIcon, 
-  Lightbulb, 
-  FileDown, 
-  Plus, 
-  ArrowUpRight 
-} from "lucide-react";
+import { Star, MapPin } from "lucide-react";
 import AppSidebar from "@/app/components/AppSidebar";
 
-type Photo = {
-  id: string;
-  caption: string | null;
-  photoUrl: string;
-};
+type SessionCategory = "plenary" | "breakout" | "workshop" | "social" | "break";
 
-type Post = {
+type Session = {
   id: string;
-  event_date: string;
   title: string;
-  content: string;
-  photos: Photo[];
+  description: string | null;
+  start_time: string; // "09:00:00"
+  end_time: string;
+  location: string | null;
+  category: SessionCategory;
+  presenter_name: string | null;
+  presenter_org: string | null;
+  is_featured: boolean;
 };
 
-export default function DocumentationPage() {
-  const [posts, setPosts] = useState<Post[]>([]);
+type ProgrammeDay = {
+  id: string;
+  event_date: string; // "2026-11-09"
+  title: string; // "Day 1"
+  description: string | null;
+  sessions: Session[];
+};
+
+const CATEGORY_STYLES: Record<SessionCategory, { dot: string; badge: string; label: string }> = {
+  plenary: { dot: "bg-[#162E55]", badge: "bg-[#EEF1F5] text-[#162E55]", label: "Plenary" },
+  breakout: { dot: "bg-[#E8A33D]", badge: "bg-[#FDF3E2] text-[#8A5D14]", label: "Breakout" },
+  workshop: { dot: "bg-[#8B5CF6]", badge: "bg-[#F1EBFE] text-[#6027C9]", label: "Workshop" },
+  social: { dot: "bg-[#E8622D]", badge: "bg-[#FDEAE2] text-[#B0410F]", label: "Social" },
+  break: { dot: "bg-[#A8BBCE]", badge: "bg-[#EEF1F5] text-[#6B7590]", label: "Break" },
+};
+
+function formatTime(t: string) {
+  const [h, m] = t.split(":");
+  return `${h}:${m}`;
+}
+
+function dayTabLabel(eventDate: string) {
+  const d = new Date(`${eventDate}T00:00:00`);
+  const weekday = d.toLocaleDateString("en-GB", { weekday: "short" }).toUpperCase();
+  const dayMonth = d.toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+  return { weekday, dayMonth };
+}
+
+export default function ProgrammePage() {
+  const [days, setDays] = useState<ProgrammeDay[]>([]);
+  const [activeDayId, setActiveDayId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     async function load() {
       try {
-        const res = await fetch("/api/documentation");
+        const res = await fetch("/api/programme");
         const data = await res.json();
-        if (!data.success) {
-          setError(data.message ?? "Unable to load documentation.");
+
+        if (!data.success || !Array.isArray(data.days)) {
+          setError(data.message ?? "Unable to load the programme.");
           return;
         }
-        setPosts(data.posts);
+
+        setDays(data.days);
+        setActiveDayId(data.days[0]?.id ?? null);
       } catch {
         setError("Network error. Please try again.");
       } finally {
@@ -50,14 +76,27 @@ export default function DocumentationPage() {
     load();
   }, []);
 
+  const activeDay = useMemo(
+    () => days.find((d) => d.id === activeDayId) ?? days[0],
+    [days, activeDayId]
+  );
+
+  const featuredSession = activeDay?.sessions.find((s) => s.is_featured);
+  const sortedSessions = useMemo(
+    () =>
+      [...(activeDay?.sessions ?? [])].sort((a, b) =>
+        a.start_time.localeCompare(b.start_time)
+      ),
+    [activeDay]
+  );
+
   return (
     <div className="min-h-screen bg-[#F4F6F8] flex text-[#0E1726] font-sans justify-center">
       <AppSidebar />
 
       <div className="flex-1 flex justify-center">
         <main className="w-[672px] max-w-[672px] min-h-screen px-[32px] py-[40px] flex flex-col items-start gap-[20px]">
-          
-          {/* Header Section */}
+          {/* Header */}
           <div className="w-full flex flex-col items-start">
             <h1 className="font-chillax font-bold text-[24px] leading-[32px] text-[#0E1726]">
               Programme
@@ -67,21 +106,20 @@ export default function DocumentationPage() {
             </p>
           </div>
 
-          {/* Segmented Navigation Control */}
+          {/* Segmented control: Schedule (this page) / Docs */}
           <div className="w-[608px] h-[40px] bg-[#E5E8EE] p-[4px] rounded-[16px] flex items-center justify-between">
-            <Link
-              href="/programme"
-              className="w-[140px] h-[32px] rounded-[12px] text-[#6B7590] hover:text-[#0E1726] capitalize transition flex items-center justify-center text-[12px] font-semibold font-['Avenir_Next_LT_Pro',sans-serif]"
-            >
-              Schedule
-            </Link>
-            
             <button
               type="button"
-              className="w-[116px] h-[32px] bg-white rounded-[12px] shadow-[0px_1px_4px_rgba(0,0,0,0.08)] flex items-center justify-center font-['Avenir_Next_LT_Pro',sans-serif] font-semibold text-[12px] leading-[16px] text-[#0E1726] capitalize"
+              className="w-[140px] h-[32px] bg-white rounded-[12px] shadow-[0px_1px_4px_rgba(0,0,0,0.08)] flex items-center justify-center font-['Inter'] font-semibold text-[12px] leading-[16px] text-[#0E1726] capitalize"
+            >
+              Schedule
+            </button>
+            <Link
+              href="/documentation"
+              className="w-[116px] h-[32px] rounded-[12px] text-[#6B7590] hover:text-[#0E1726] capitalize transition flex items-center justify-center text-[12px] font-semibold font-['Inter']"
             >
               Docs
-            </button>
+            </Link>
           </div>
 
           {error && (
@@ -92,164 +130,147 @@ export default function DocumentationPage() {
 
           {loading ? (
             <div className="w-[608px] py-[40px] text-center font-['Inter'] text-[14px] text-[#6B7590]">
-              Loading documentation…
+              Loading programme…
+            </div>
+          ) : !activeDay ? (
+            <div className="w-[608px] py-[40px] text-center font-['Inter'] text-[14px] text-[#6B7590]">
+              No programme has been published yet.
             </div>
           ) : (
-            <div className="w-[608px] flex flex-col items-start gap-[28px]">
-              
-              {/* Section 1: Session Notes */}
-              <section className="w-full flex flex-col gap-[12px]">
-                <div className="w-full flex items-center justify-between">
-                  <div className="flex items-center gap-[8px]">
-                    <FileText className="w-[17px] h-[17px] text-[#1C2E5A]" />
-                    <h2 className="font-chillax font-semibold text-[18px] leading-[28px] text-[#0E1726]">
-                      Session Notes
-                    </h2>
-                  </div>
-                  <button className="h-[32px] px-[14px] bg-[#162E55] shadow-[0px_4px_20px_rgba(28,46,90,0.3)] hover:bg-[#1C2E5A] text-white rounded-[12px] font-['Chillax'] font-semibold text-[12px] leading-[16px] flex items-center gap-[6px] transition">
-                    <Plus className="w-[12px] h-[12px]" />
-                    Add Note
-                  </button>
-                </div>
-
-                <div className="w-full flex flex-col gap-[12px]">
-                  {SAMPLE_NOTES.map((note) => (
-                    <div
-                      key={note.id}
-                      className="w-full bg-white rounded-[24px] border border-[rgba(28,46,90,0.1)] shadow-[0px_1px_3px_rgba(28,46,90,0.05),0px_4px_16px_rgba(28,46,90,0.07)] p-[16px] flex flex-col gap-[10px]"
+            <div className="w-[608px] flex flex-col items-start gap-[16px]">
+              {/* Day tabs */}
+              <div className="w-full flex items-center gap-[10px]">
+                {days.map((day) => {
+                  const { weekday, dayMonth } = dayTabLabel(day.event_date);
+                  const active = day.id === activeDay.id;
+                  return (
+                    <button
+                      key={day.id}
+                      type="button"
+                      onClick={() => setActiveDayId(day.id)}
+                      className={`flex-1 rounded-[16px] px-[14px] py-[10px] text-left transition ${
+                        active
+                          ? "bg-[#162E55] text-white shadow-[0px_4px_20px_rgba(28,46,90,0.25)]"
+                          : "bg-white border border-[rgba(28,46,90,0.1)] text-[#0E1726] hover:border-[rgba(28,46,90,0.25)]"
+                      }`}
                     >
-                      <div className="w-full flex items-center justify-between">
-                        <div className="flex items-center gap-[10px]">
-                          <div className="w-[28px] h-[28px] rounded-[12px] bg-[#162E55] text-white font-['Inter'] font-bold text-[10px] leading-[15px] flex items-center justify-center uppercase">
-                            {note.initials}
-                          </div>
-                          <div className="flex flex-col">
-                            <span className="font-['Inter'] font-semibold text-[12px] leading-[16px] text-[#0E1726]">
-                              {note.author_name}
-                            </span>
-                            <span className="font-['Inter'] font-normal text-[10px] leading-[15px] text-[#6B7590]">
-                              {note.author_org}
-                            </span>
-                          </div>
-                        </div>
-                        <div className="px-[8px] py-[4px] bg-[#EEF1F5] rounded-[8px]">
-                          <span className="font-['Inter'] font-normal text-[10px] leading-[15px] text-[#6B7590]">
-                            {note.timestamp}
-                          </span>
-                        </div>
+                      <div
+                        className={`font-['Inter'] font-semibold text-[10px] leading-[14px] tracking-[0.5px] ${
+                          active ? "text-white/60" : "text-[#6B7590]"
+                        }`}
+                      >
+                        {weekday}
                       </div>
-                      <p className="font-['Inter'] font-normal text-[14px] leading-[23px] text-[#0E1726] pt-[10px]">
-                        {note.content}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              </section>
+                      <div className="font-chillax font-bold text-[16px] leading-[22px]">
+                        {day.title}
+                      </div>
+                      <div
+                        className={`font-['Inter'] text-[11px] leading-[15px] ${
+                          active ? "text-white/60" : "text-[#6B7590]"
+                        }`}
+                      >
+                        {dayMonth}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
 
-              {/* Section 2: Photo Gallery Grid */}
-              <section className="w-full flex flex-col gap-[12px] pt-[24px]">
-                <div className="w-full flex items-center justify-between">
-                  <div className="flex items-center gap-[8px]">
-                    <ImageIcon className="w-[17px] h-[17px] text-[#1C2E5A]" />
-                    <h2 className="font-chillax font-semibold text-[18px] leading-[28px] text-[#0E1726]">
-                      Photo Gallery
-                    </h2>
+              {/* Featured session */}
+              {featuredSession && (
+                <div className="w-full bg-[#162E55] rounded-[24px] p-5 text-white flex flex-col gap-2">
+                  <div className="flex items-center gap-[6px] font-['Inter'] font-semibold text-[10px] leading-[14px] tracking-[0.5px] uppercase text-white/60">
+                    <Star className="w-[12px] h-[12px] fill-current" />
+                    Featured · {formatTime(featuredSession.start_time)}–{formatTime(featuredSession.end_time)}
                   </div>
-                  <div className="px-[10px] py-[4px] bg-[#EEF1F5] rounded-[8px]">
-                    <span className="font-['Inter'] font-normal text-[12px] leading-[16px] text-[#6B7590]">
-                      {posts.reduce((acc, p) => acc + p.photos.length, 0) || 6} photos
+                  <div className="font-chillax font-semibold text-[18px] leading-[24px]">
+                    {featuredSession.title}
+                  </div>
+                  {(featuredSession.presenter_name || featuredSession.location) && (
+                    <div className="font-['Inter'] text-[12px] leading-[18px] text-white/70">
+                      {featuredSession.presenter_name}
+                      {featuredSession.presenter_org ? ` · ${featuredSession.presenter_org}` : ""}
+                      {featuredSession.location ? ` · ${featuredSession.location}` : ""}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Category legend */}
+              <div className="flex items-center gap-[14px] flex-wrap">
+                {(Object.keys(CATEGORY_STYLES) as SessionCategory[]).map((cat) => (
+                  <div key={cat} className="flex items-center gap-[6px]">
+                    <span className={`w-[7px] h-[7px] rounded-full ${CATEGORY_STYLES[cat].dot}`} />
+                    <span className="font-['Inter'] text-[11px] leading-[15px] text-[#6B7590] capitalize">
+                      {CATEGORY_STYLES[cat].label}
                     </span>
                   </div>
-                </div>
+                ))}
+              </div>
 
-                <div className="w-full grid grid-cols-2 gap-[10px]">
-                  {(posts.flatMap((p) => p.photos).length > 0
-                    ? posts.flatMap((p) => p.photos)
-                    : DEFAULT_PHOTOS
-                  ).map((photo, i) => (
+              {/* Session list */}
+              <div className="w-full flex flex-col gap-[10px]">
+                {sortedSessions.map((session) => {
+                  const style = CATEGORY_STYLES[session.category];
+                  if (session.category === "break") {
+                    return (
+                      <div
+                        key={session.id}
+                        className="w-full flex items-center gap-3 py-1 text-[#A0AEC0]"
+                      >
+                        <span className="font-['Inter'] text-[11px] w-[42px] shrink-0">
+                          {formatTime(session.start_time)}
+                        </span>
+                        <span className="flex-1 h-px bg-[rgba(28,46,90,0.08)]" />
+                        <span className="font-['Inter'] text-[11px] uppercase tracking-[0.5px]">
+                          {session.title}
+                        </span>
+                        <span className="flex-1 h-px bg-[rgba(28,46,90,0.08)]" />
+                      </div>
+                    );
+                  }
+                  return (
                     <div
-                      key={photo.id || i}
-                      className="group relative w-full h-[224.25px] rounded-[16px] overflow-hidden bg-[#E5E8EE] flex flex-col justify-center items-center"
+                      key={session.id}
+                      className="w-full bg-white rounded-[20px] border border-[rgba(28,46,90,0.1)] shadow-[0px_1px_3px_rgba(28,46,90,0.05)] p-4 flex gap-4"
                     >
-                      <img
-                        src={photo.photoUrl}
-                        alt={photo.caption ?? "Convening photo"}
-                        className="w-full h-full object-cover transition duration-300 group-hover:scale-105"
-                      />
-                      {photo.caption && (
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition duration-200 p-[12px] flex items-end">
-                          <p className="font-['Inter'] text-[11px] leading-[14px] text-white line-clamp-2">
-                            {photo.caption}
-                          </p>
+                      <div className="w-[52px] shrink-0 font-['Inter'] text-[12px] leading-[16px] text-[#6B7590]">
+                        <div className="font-semibold text-[#0E1726]">
+                          {formatTime(session.start_time)}
                         </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </section>
-
-              {/* Section 3: Key Takeaways */}
-              <section className="w-full flex flex-col gap-[12px]">
-                <div className="flex items-center gap-[8px]">
-                  <Lightbulb className="w-[17px] h-[17px] text-[#1C2E5A]" />
-                  <h2 className="font-chillax font-semibold text-[18px] leading-[28px] text-[#0E1726]">
-                    Key Takeaways
-                  </h2>
-                </div>
-
-                <div className="w-full p-5 bg-white border border-[rgba(28,46,90,0.1)] rounded-[24px] shadow-[0_1px_3px_rgba(28,46,90,0.05),0_4px_16px_rgba(28,46,90,0.07)] flex flex-col gap-3.5">
-                  {KEY_TAKEAWAYS.map((takeaway, idx) => (
-                    <div key={idx} className="flex items-start gap-3">
-                      <span className="w-5 h-5 rounded-full bg-[#162E55] text-white text-[9px] font-bold flex items-center justify-center flex-shrink-0 mt-0.5">
-                        {idx + 1}
-                      </span>
-                      <p className="font-['Inter'] font-normal text-sm leading-[23px] text-[#0E1726]">
-                        {takeaway}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              </section>
-
-              {/* Section 4: Resources & Downloads */}
-              <section className="w-full flex flex-col gap-[12px]">
-                <div className="flex items-center gap-[8px]">
-                  <FileDown className="w-[17px] h-[17px] text-[#1C2E5A]" />
-                  <h2 className="font-chillax font-semibold text-[18px] leading-[28px] text-[#0E1726]">
-                    Resources
-                  </h2>
-                </div>
-
-                <div className="w-full flex flex-col gap-2">
-                  {RESOURCES.map((res, i) => (
-                    <a
-                      key={i}
-                      href={res.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="w-full h-[74px] p-4 bg-white border border-[rgba(28,46,90,0.1)] rounded-[24px] shadow-[0_1px_3px_rgba(28,46,90,0.05),0_4px_16px_rgba(28,46,90,0.07)] flex items-center gap-3.5 hover:bg-[#F9FAFB] transition-colors text-left group focus:outline-none"
-                    >
-                      <div className="w-10 h-10 bg-[#EEF1F5] rounded-[16px] flex items-center justify-center flex-shrink-0">
-                        <FileText className="w-4 h-4 text-[#1C2E5A]" />
+                        <div>–{formatTime(session.end_time)}</div>
                       </div>
-                      <div className="flex flex-col flex-grow min-w-0">
-                        <span className="font-['Inter'] font-medium text-sm leading-[20px] text-[#0E1726] truncate">
-                          {res.title}
-                        </span>
-                        <span className="font-['Inter'] font-normal text-xs leading-[16px] text-[#6B7590] mt-[2px]">
-                          {res.meta}
-                        </span>
+                      <div className="flex-1 flex flex-col gap-1">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="font-['Inter'] font-semibold text-[14px] leading-[20px] text-[#0E1726]">
+                            {session.title}
+                          </span>
+                          <span
+                            className={`shrink-0 px-[8px] py-[2px] rounded-[8px] font-['Inter'] font-medium text-[10px] leading-[14px] ${style.badge}`}
+                          >
+                            {style.label}
+                          </span>
+                        </div>
+                        {(session.presenter_name || session.location) && (
+                          <span className="font-['Inter'] text-[12px] leading-[16px] text-[#6B7590]">
+                            {session.presenter_name}
+                            {session.presenter_org ? ` · ${session.presenter_org}` : ""}
+                          </span>
+                        )}
+                        {session.location && (
+                          <span className="flex items-center gap-1 font-['Inter'] text-[11px] leading-[15px] text-[#A0AEC0]">
+                            <MapPin className="w-[11px] h-[11px]" />
+                            {session.location}
+                          </span>
+                        )}
                       </div>
-                      <ArrowUpRight className="w-[15px] h-[15px] text-[#6B7590] group-hover:text-[#0E1726] transition flex-shrink-0" />
-                    </a>
-                  ))}
-                </div>
-              </section>
-
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           )}
 
-          {/* Footer Back Link */}
           <div className="w-[608px] mt-[8px]">
             <Link
               href="/register"
@@ -263,65 +284,3 @@ export default function DocumentationPage() {
     </div>
   );
 }
-
-const SAMPLE_NOTES = [
-  {
-    id: "1",
-    initials: "MS",
-    author_name: "Maria Schmidt",
-    author_org: "Open Society Foundations",
-    timestamp: "Day 1 · 14:32",
-    content: "The rights-based approaches session surfaced strong demand for a shared learning platform. OSF will follow up with MENA Rights Group on joint programming opportunities in the Mediterranean region.",
-  },
-  {
-    id: "2",
-    initials: "JO",
-    author_name: "James Odhiambo",
-    author_org: "OAK Foundation",
-    timestamp: "Day 1 · 16:50",
-    content: "Digital Rights breakout: participants want a working group to share tools for operating in restricted digital environments. Interested orgs: Digital Frontiers, Access Now, EFF.",
-  },
-  {
-    id: "3",
-    initials: "AD",
-    author_name: "Awa Diallo",
-    author_org: "Geneva Secretariat",
-    timestamp: "Day 2 · 11:15",
-    content: "Strategic communications workshop highly rated. Rashida's adaptive messaging framework is directly applicable across 60% of the portfolio. Requesting follow-up toolkit.",
-  },
-  {
-    id: "4",
-    initials: "PAD",
-    author_name: "Prof. Amara Diallo",
-    author_org: "Sciences Po Paris",
-    timestamp: "Day 2 · 16:00",
-    content: "Fishbowl revealed consensus: philanthropy needs to accept longer time horizons (10+ years) and better share learning. Key ask: OAK to publish failure cases alongside success stories.",
-  },
-];
-
-const DEFAULT_PHOTOS: Photo[] = [
-  { id: "1", caption: "Opening plenary session", photoUrl: "https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=600&q=80" },
-  { id: "2", caption: "Roundtable discussion", photoUrl: "https://images.unsplash.com/photo-1475721027785-f74eccf877e2?auto=format&fit=crop&w=600&q=80" },
-  { id: "3", caption: "Workshop in progress", photoUrl: "https://images.unsplash.com/photo-1515187029135-18ee286d815b?auto=format&fit=crop&w=600&q=80" },
-  { id: "4", caption: "Welcome reception dinner", photoUrl: "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&w=600&q=80" },
-  { id: "5", caption: "Keynote speaker", photoUrl: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=600&q=80" },
-  { id: "6", caption: "Breakout group discussion", photoUrl: "https://images.unsplash.com/photo-1507679799987-c73779587ccf?auto=format&fit=crop&w=600&q=80" },
-];
-
-const KEY_TAKEAWAYS = [
-  "Philanthropy needs to accept 10+ year time horizon",
-  "Shared learning infrastructure is the most requested element",
-  "Digital rights must be integrated into all program strategies",
-  "Flexible, core funding remains critical for grantee resilience",
-  "Rights-based framing significantly improves grantee advocacy outcomes",
-  "Peer exchange is rated more valuable than expert-led sessions",
-];
-
-const RESOURCES = [
-  { title: "Opening Plenary Presentation", meta: "PDF · 3.2 MB · Day 1", url: "#" },
-  { title: "OAK Portfolio Overview 2024–26", meta: "PDF · 1.8 MB · Day 2", url: "#" },
-  { title: "Strategic Communications Toolkit", meta: "PDF · 4.5 MB · Day 2", url: "#" },
-  { title: "Action Planning Workbook", meta: "DOCX · 0.9 MB · Day 3", url: "#" },
-  { title: "Partner Contact Directory", meta: "XLSX · 0.4 MB · All Days", url: "#" },
-  { title: "Photo Gallery (High Res)", meta: "ZIP · 184 MB · All Days", url: "#" },
-];

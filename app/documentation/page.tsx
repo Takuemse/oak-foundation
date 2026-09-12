@@ -78,16 +78,16 @@ export default function DocumentationPage() {
 
           {/* Segmented Navigation Control */}
           <div className="w-[608px] h-[40px] bg-[#E5E8EE] p-[4px] rounded-[16px] flex items-center justify-between">
-            <Link
+             <Link
               href="/programme"
-              className="w-[140px] h-[32px] rounded-[12px] font-[#6B7590] hover:text-[#0E1726] capitalize transition flex items-center justify-center text-[12px] font-semibold"
+              className="w-[140px] h-[32px] rounded-[12px] text-[#6B7590] hover:text-[#0E1726] capitalize transition flex items-center justify-center text-[12px] font-semibold font-['Inter']"
             >
               Schedule
             </Link>
-            
+
             <button
               type="button"
-              className="w-[116px] h-[32px] bg-white rounded-[12px] shadow-[0px_1px_4px_rgba(0,0,0,0.08)] flex flex-col justify-center items-center font-['Avenir_Next_LT_Pro',sans-serif] font-semibold text-[12px] leading-[16px] text-[#0E1726] capitalize"
+              className="w-[116px] h-[32px] bg-white rounded-[12px] shadow-[0px_1px_4px_rgba(0,0,0,0.08)] flex flex-col justify-center items-center font-['Inter'] font-semibold text-[12px] leading-[16px] text-[#0E1726] capitalize"
             >
               Docs
             </button>
