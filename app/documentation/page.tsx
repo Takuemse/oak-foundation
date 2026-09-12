@@ -2,29 +2,20 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { 
-  FileText, 
-  Image as ImageIcon, 
-  Lightbulb, 
-  FileDown, 
-  Plus, 
-  ArrowUpRight 
+import {
+  FileText,
+  Image as ImageIcon,
+  Lightbulb,
+  FileDown,
+  Plus,
 } from "lucide-react";
 import AppSidebar from "@/app/components/AppSidebar";
+import { createBrowserSupabaseClient } from "@/app/lib/superbase/browser";
 
 type Photo = {
   id: string;
   caption: string | null;
   photoUrl: string;
-};
-
-type Note = {
-  id: string;
-  initials: string;
-  author_name: string;
-  author_org: string;
-  timestamp: string;
-  content: string;
 };
 
 type Post = {
@@ -35,10 +26,23 @@ type Post = {
   photos: Photo[];
 };
 
+function formatPostDate(dateStr: string) {
+  try {
+    return new Date(`${dateStr}T00:00:00`).toLocaleDateString("en-GB", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+    });
+  } catch {
+    return dateStr;
+  }
+}
+
 export default function DocumentationPage() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     async function load() {
@@ -57,7 +61,16 @@ export default function DocumentationPage() {
       }
     }
     load();
+
+    // Client-side check only decides whether to *show* the Add Note
+    // shortcut. The real gate is proxy.ts protecting /admin/documentation.
+    const supabase = createBrowserSupabaseClient();
+    supabase.auth.getUser().then(({ data }) => {
+      setIsAdmin(!!data.user);
+    });
   }, []);
+
+  const sortedPosts = [...posts].sort((a, b) => b.event_date.localeCompare(a.event_date));
 
   return (
     <div className="min-h-screen bg-[#F4F6F8] flex text-[#0E1726] font-sans justify-center">
@@ -65,20 +78,17 @@ export default function DocumentationPage() {
 
       <div className="flex-1 flex justify-center">
         <main className="w-[672px] max-w-[672px] min-h-screen px-[32px] py-[40px] flex flex-col items-start gap-[20px]">
-          
-          {/* Header Section */}
           <div className="w-full flex flex-col items-start">
             <h1 className="font-chillax font-bold text-[24px] leading-[32px] text-[#0E1726]">
-              Programme
+              Documentation
             </h1>
             <p className="font-['Inter'] font-normal text-[14px] leading-[20px] text-[#6B7590] mt-[2px]">
               OAK Partner Convening 2026
             </p>
           </div>
 
-          {/* Segmented Navigation Control */}
           <div className="w-[608px] h-[40px] bg-[#E5E8EE] p-[4px] rounded-[16px] flex items-center justify-between">
-             <Link
+            <Link
               href="/programme"
               className="w-[140px] h-[32px] rounded-[12px] text-[#6B7590] hover:text-[#0E1726] capitalize transition flex items-center justify-center text-[12px] font-semibold font-['Inter']"
             >
@@ -105,8 +115,7 @@ export default function DocumentationPage() {
             </div>
           ) : (
             <div className="w-[608px] flex flex-col items-start gap-[28px]">
-              
-              {/* Section 1: Session Notes */}
+              {/* Section 1: Session Notes (real, admin-published) */}
               <section className="w-full flex flex-col gap-[12px]">
                 <div className="w-full flex items-center justify-between">
                   <div className="flex items-center gap-[8px]">
@@ -115,44 +124,55 @@ export default function DocumentationPage() {
                       Session Notes
                     </h2>
                   </div>
-                  <button className="h-[32px] px-[14px] bg-[#162E55] shadow-[0px_4px_20px_rgba(28,46,90,0.3)] hover:bg-[#1C2E5A] text-white rounded-[12px] font-['Chillax'] font-semibold text-[12px] leading-[16px] flex items-center gap-[6px] transition">
-                    <Plus className="w-[12px] h-[12px]" />
-                    Add Note
-                  </button>
+                  {isAdmin && (
+                    <Link
+                      href="/admin/documentation"
+                      className="h-[32px] px-[14px] bg-[#162E55] shadow-[0px_4px_20px_rgba(28,46,90,0.3)] hover:bg-[#1C2E5A] text-white rounded-[12px] font-['Chillax'] font-semibold text-[12px] leading-[16px] flex items-center gap-[6px] transition"
+                    >
+                      <Plus className="w-[12px] h-[12px]" />
+                      Add Note
+                    </Link>
+                  )}
                 </div>
 
-                <div className="w-full flex flex-col gap-[12px]">
-                  {SAMPLE_NOTES.map((note) => (
-                    <div
-                      key={note.id}
-                      className="w-full bg-white rounded-[24px] border border-[rgba(28,46,90,0.1)] shadow-[0px_1px_3px_rgba(28,46,90,0.05),0px_4px_16px_rgba(28,46,90,0.07)] p-[16px] flex flex-col gap-[10px]"
-                    >
-                      <div className="w-full flex items-center justify-between">
-                        <div className="flex items-center gap-[10px]">
-                          <div className="w-[28px] h-[28px] rounded-[12px] bg-[#162E55] text-white font-['Inter'] font-bold text-[10px] leading-[15px] flex items-center justify-center uppercase">
-                            {note.initials}
+                {sortedPosts.length === 0 ? (
+                  <div className="w-full bg-white rounded-[24px] border border-[rgba(28,46,90,0.1)] py-[32px] text-center font-['Inter'] text-[14px] text-[#6B7590]">
+                    No updates published yet — check back during the event.
+                  </div>
+                ) : (
+                  <div className="w-full flex flex-col gap-[12px]">
+                    {sortedPosts.map((post) => (
+                      <div
+                        key={post.id}
+                        className="w-full bg-white rounded-[24px] border border-[rgba(28,46,90,0.1)] shadow-[0px_1px_3px_rgba(28,46,90,0.05),0px_4px_16px_rgba(28,46,90,0.07)] p-[16px] flex flex-col gap-[10px]"
+                      >
+                        <div className="w-full flex items-center justify-between">
+                          <div className="flex items-center gap-[10px]">
+                            <div className="w-[28px] h-[28px] rounded-[12px] bg-[#162E55] text-white flex items-center justify-center shrink-0">
+                              <FileText className="w-[13px] h-[13px]" />
+                            </div>
+                            <div className="flex flex-col">
+                              <span className="font-['Inter'] font-semibold text-[12px] leading-[16px] text-[#0E1726]">
+                                {post.title}
+                              </span>
+                              <span className="font-['Inter'] font-normal text-[10px] leading-[15px] text-[#6B7590]">
+                                OAK Foundation Team
+                              </span>
+                            </div>
                           </div>
-                          <div className="flex flex-col">
-                            <span className="font-['Inter'] font-semibold text-[12px] leading-[16px] text-[#0E1726]">
-                              {note.author_name}
-                            </span>
+                          <div className="px-[8px] py-[4px] bg-[#EEF1F5] rounded-[8px] shrink-0">
                             <span className="font-['Inter'] font-normal text-[10px] leading-[15px] text-[#6B7590]">
-                              {note.author_org}
+                              {formatPostDate(post.event_date)}
                             </span>
                           </div>
                         </div>
-                        <div className="px-[8px] py-[4px] bg-[#EEF1F5] rounded-[8px]">
-                          <span className="font-['Inter'] font-normal text-[10px] leading-[15px] text-[#6B7590]">
-                            {note.timestamp}
-                          </span>
-                        </div>
+                        <p className="font-['Inter'] font-normal text-[14px] leading-[23px] text-[#0E1726] pt-[10px]">
+                          {post.content}
+                        </p>
                       </div>
-                      <p className="font-['Inter'] font-normal text-[14px] leading-[23px] text-[#0E1726] pt-[10px]">
-                        {note.content}
-                      </p>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                )}
               </section>
 
               {/* Section 2: Photo Gallery Grid */}
@@ -230,8 +250,8 @@ export default function DocumentationPage() {
                 <div className="w-[608px] pt-[12px] flex flex-col items-start">
                   <div className="box-border flex flex-col items-start p-[20px] w-[608px] bg-white border border-[rgba(28,46,90,0.1)] shadow-[0px_1px_3px_rgba(28,46,90,0.05),0px_4px_16px_rgba(28,46,90,0.07)] rounded-[24px]">
                     {KEY_TAKEAWAYS.map((takeaway, idx) => (
-                      <div 
-                        key={idx} 
+                      <div
+                        key={idx}
                         className={`w-[566px] flex flex-row items-start ${idx === 0 ? '' : 'pt-[14px]'} gap-[12px]`}
                       >
                         <div className="flex flex-row items-start pt-[2px] w-[20px] h-[22px]">
@@ -268,8 +288,8 @@ export default function DocumentationPage() {
                       style={{ order: i }}
                       className={`w-[608px] ${i === 0 ? '' : 'pt-[8px]'}`}
                     >
-                      <a
-                        href={res.url}
+                      
+                       <a href={res.url}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="box-border flex flex-row items-center p-[16px] gap-[14px] w-[608px] h-[74px] bg-white border border-[rgba(28,46,90,0.1)] shadow-[0px_1px_3px_rgba(28,46,90,0.05),0px_4px_16px_rgba(28,46,90,0.07)] rounded-[24px] hover:bg-[#F9FAFB] transition-colors group focus:outline-none"
@@ -295,27 +315,13 @@ export default function DocumentationPage() {
                   ))}
                 </div>
               </section>
-
             </div>
           )}
-
-          
         </main>
       </div>
     </div>
   );
 }
-
-const SAMPLE_NOTES: Note[] = [
-  {
-    id: "1",
-    initials: "MS",
-    author_name: "Maria Schmidt",
-    author_org: "Open Society Foundation",
-    timestamp: "2 hours ago",
-    content: " Emphasized the critical need for localized data frameworks to track community-level impact metrics effectively across sub-Saharan Africa."
-  }
-];
 
 const DEFAULT_PHOTOS: Photo[] = [
   { id: "1", caption: "Opening Plenary Session", photoUrl: "https://images.unsplash.com/photo-1515187029135-18ee286d815b?w=600&auto=format&fit=crop&q=60" },
@@ -331,33 +337,13 @@ const KEY_TAKEAWAYS = [
   "Agreed on unified reporting metrics for 2026–2027 project cycles.",
   "Established decentralized working groups for ongoing policy alignment.",
   "Committed to transparent resource allocation across partner networks.",
-  "Finalized schedules for upcoming regional stakeholder meetups."
+  "Finalized schedules for upcoming regional stakeholder meetups.",
 ];
 
 const RESOURCES = [
-  {
-    title: "Opening Plenary Presentation",
-    meta: "PDF · 3.2 MB · Day 1",
-    url: "#",
-  },
-  {
-    title: "OAK Portfolio Overview 2024–26",
-    meta: "PDF · 1.8 MB · Day 2",
-    url: "#",
-  },
-  {
-    title: "Action Planning Workbook",
-    meta: "DOCX · 0.9 MB · Day 3",
-    url: "#",
-  },
-  {
-    title: "Partner Contact Directory",
-    meta: "XLSX · 0.4 MB · All Days",
-    url: "#",
-  },
-  {
-    title: "Photo Gallery (High Res)",
-    meta: "ZIP · 184 MB · All Days",
-    url: "#",
-  },
+  { title: "Opening Plenary Presentation", meta: "PDF · 3.2 MB · Day 1", url: "#" },
+  { title: "OAK Portfolio Overview 2024–26", meta: "PDF · 1.8 MB · Day 2", url: "#" },
+  { title: "Action Planning Workbook", meta: "DOCX · 0.9 MB · Day 3", url: "#" },
+  { title: "Partner Contact Directory", meta: "XLSX · 0.4 MB · All Days", url: "#" },
+  { title: "Photo Gallery (High Res)", meta: "ZIP · 184 MB · All Days", url: "#" },
 ];

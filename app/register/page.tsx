@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import { QRCodeCanvas } from "qrcode.react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import Link from "next/link";
 import AppSidebar from "@/app/components/AppSidebar";
 
 type RegisterResponse = {
@@ -77,8 +78,11 @@ export default function RegisterPage() {
       sessionStorage.setItem("oak_role", data.attendee.role ?? form.role);
       window.dispatchEvent(new Event("oak-registration-changed"));
       
-      if (form.role === "Partner") {
+          if (form.role === "Partner") {
         setResult(data.attendee);
+        if (data.attendee.qrToken) {
+          localStorage.setItem("oak_qr_token", data.attendee.qrToken);
+        }
       } else if (form.role === "Coordination Team") {
         router.push("/admin/check-in");
       } else {
@@ -142,7 +146,7 @@ export default function RegisterPage() {
           
             <div className="relative overflow-hidden w-full h-[167px] bg-[#162E55] rounded-[24px] p-6 shadow-[0px_1px_3px_rgba(28,46,90,0.05),0px_4px_16px_rgba(28,46,90,0.07)] flex flex-col justify-between">
               <div
-                className="pointer-events-none absolute w-[192px] h-[192px] -right-[26px] -top-[40px] rounded-full"
+                className="pointer-events-none absolute w-[192px] h-[192px] -right-[42px] -top-[49px] rounded-full"
                 style={{
                   background:
                     "radial-gradient(70.71% 70.71% at 50% 50%, rgba(168, 187, 206, 0.2) 0%, rgba(168, 187, 206, 0) 70%)",
@@ -150,7 +154,7 @@ export default function RegisterPage() {
               />
 
               <div className="relative z-10 flex flex-col justify-between h-full">
-                <h1 className="font-['Chillax',sans-serif] font-bold text-[28px] md:text-[30px] leading-[34px] md:leading-[37.5px] tracking-[0px] text-white pt-1">
+                <h1 className="font-['Chillax',sans-serif] font-bold text-[30px] leading-[37.5px] tracking-[0px] text-white pt-1">
                   Partner <br />
                   Convening 2026
                 </h1>
@@ -161,7 +165,7 @@ export default function RegisterPage() {
             </div>
 
       
-            <div className="grid grid-cols-3 gap-2 sm:gap-3 w-full">
+            <div className="grid grid-cols-3 gap-3 w-full">
               <StatCard
                 value="110+"
                 label="Attendees"
@@ -200,13 +204,13 @@ export default function RegisterPage() {
       
             <form
               onSubmit={handleSubmit}
-              className="w-full bg-white rounded-[24px] p-4 sm:p-5 shadow-[0px_1px_3px_rgba(28,46,90,0.05),0px_4px_16px_rgba(28,46,90,0.07)] border border-[rgba(28,46,90,0.1)] flex flex-col gap-4 text-left"
+              className="w-full bg-white rounded-[24px] p-5 shadow-[0px_1px_1.5px_rgba(28,46,90,0.05),0px_4px_8px_rgba(28,46,90,0.07)] border border-[rgba(28,46,90,0.1)] flex flex-col gap-4 text-left"
             >
               <h2 className="font-['Chillax',sans-serif] font-semibold text-[18px] leading-[28px] tracking-[0px] text-[#0E1726]">
                 Registration Form
               </h2>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 gap-3">
                 <Field label="First Name" required>
                   <input
                     required
@@ -318,7 +322,7 @@ export default function RegisterPage() {
                 />
                 <span className="font-['Inter',sans-serif] font-normal text-[14px] leading-[22.75px] tracking-[0px] text-[#0E1726]">
                   I agree to OAK Foundation&apos;s{" "}
-                  <a href="#" className="font-['Inter',sans-serif] font-normal text-[14px] leading-[22.75px] tracking-[0px] underline decoration-solid decoration-[0%] underline-offset-[0%] text-[#0E1726] hover:text-[#162E55]">
+                  <a href="#" className="font-['Inter',sans-serif] font-normal text-[14px] leading-[22.75px] tracking-[0px] underline decoration-solid decoration-[0%] underline-offset-[0%] text-[#162E55] hover:opacity-80">
                     privacy policy
                   </a>{" "}
                   and consent to my registration data being used for event coordination.
@@ -329,7 +333,7 @@ export default function RegisterPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full h-[56px] text-white rounded-[16px] font-['Chillax',sans-serif] font-semibold text-[16px] leading-[24px] tracking-[0px] text-center transition duration-150 disabled:opacity-50 flex items-center justify-center shadow-[0px_4px_20px_rgba(28,46,90,0.3)] hover:opacity-95"
+                className="w-full h-[56px] text-white rounded-[16px] font-['Chillax',sans-serif] font-semibold text-[16px] leading-[24px] tracking-[0px] text-center transition duration-150 disabled:opacity-50 flex items-center justify-center shadow-[0px_4px_10px_rgba(28,46,90,0.3)] hover:opacity-95"
                 style={{
                   background: "linear-gradient(135deg, #1C2E5A 0%, #2D4A82 100%)",
                 }}
@@ -378,7 +382,7 @@ function Field({
 
 function StatCard({ value, label, icon }: { value: string; label: string; icon?: React.ReactNode }) {
   return (
-    <div className="bg-white rounded-[20px] sm:rounded-[24px] p-3 sm:p-4 h-full shadow-[0px_1px_3px_rgba(28,46,90,0.05),0px_4px_16px_rgba(28,46,90,0.07)] flex flex-col justify-between text-left border border-[rgba(28,46,90,0.1)]">
+    <div className="bg-white rounded-[24px] p-4 h-full shadow-[0px_1px_1.5px_rgba(28,46,90,0.05),0px_4px_8px_rgba(28,46,90,0.07)] flex flex-col justify-between text-left border border-[rgba(28,46,90,0.1)]">
       <div>{icon}</div>
       <div className="mt-2">
         <div className="font-['Chillax',sans-serif] font-bold text-[20px] leading-[20px] tracking-[0px] text-[#0E1726]">
@@ -519,9 +523,9 @@ function RegistrationSuccess({
             You&apos;re Registered, <br />
             {attendee.firstName}!
           </h1>
-          {attendee.email && (
+                 {attendee.organizationName && (
             <span className="font-['Inter',sans-serif] font-normal text-[12px] leading-[18px] text-white/50 mt-1 truncate max-w-[220px] sm:max-w-none">
-              {attendee.email}
+              {attendee.organizationName}
             </span>
           )}
         </div>
@@ -578,7 +582,7 @@ function RegistrationSuccess({
         Download QR Code
       </button>
 
-      <button
+         <button
         onClick={onRegisterAnother}
         className="w-full py-2 text-center font-['Inter',sans-serif] font-medium text-[13px] leading-[18px] text-[#6B7590] hover:text-[#162E55] transition flex items-center justify-center gap-1.5"
       >
@@ -587,6 +591,14 @@ function RegistrationSuccess({
         </svg>
         Register another attendee
       </button>
+
+      <p className="w-full text-center font-['Inter',sans-serif] font-normal text-[12px] leading-[16px] text-[#A0AEC0]">
+        You can come back to this pass anytime from{" "}
+        <Link href="/qr" className="underline text-[#6B7590] hover:text-[#162E55]">
+          My QR Code
+        </Link>{" "}
+        in the sidebar.
+      </p>
     </div>
   );
 }

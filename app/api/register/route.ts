@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServerSupabaseClient } from "@/app/lib/superbase/server";
+import { createSessionToken } from "@/app/lib/session";
 
 export async function POST(request: NextRequest) {
   try {
@@ -91,11 +92,9 @@ export async function POST(request: NextRequest) {
         { status: 500 }
       );
     }
+  const attendee = data?.[0];
 
-    const attendee = data?.[0];
-
-    // 4. Enhanced Response Payload
-    return NextResponse.json(
+    const response = NextResponse.json(
       {
         success: true,
         message: "Registration completed successfully.",
@@ -111,6 +110,22 @@ export async function POST(request: NextRequest) {
       },
       { status: 201 }
     );
+      const sessionToken = await createSessionToken({
+      attendeeId: attendee.attendee_id,
+      role: role || "",
+      exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24 * 30, // 30 days
+    });
+
+    response.cookies.set("oak_session", sessionToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      path: "/",
+      maxAge: 60 * 60 * 24 * 30,
+    });
+
+    return response;
+   
   } catch (error) {
     console.error("API registration error:", error);
 

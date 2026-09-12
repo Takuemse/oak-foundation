@@ -4,12 +4,12 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { UserPlus, Calendar, Globe, ScanLine, BarChart3 } from "lucide-react";
+import { UserPlus, Calendar, Globe, ScanLine, BarChart3, QrCode } from "lucide-react";
 
 type NavRole = "Partner" | "OAK Staff" | "Coordination Team" | "Presenter" | "Observer";
-
 const PROGRAMME_ROLES: NavRole[] = ["OAK Staff", "Presenter", "Observer", "Coordination Team"];
 const COORDINATION_ONLY: NavRole[] = ["Coordination Team"];
+const PARTNER_ONLY: NavRole[] = ["Partner"];
 
 const ALL_LINKS: {
   icon: typeof UserPlus;
@@ -19,12 +19,12 @@ const ALL_LINKS: {
   roles: NavRole[] | null; // null = always visible
 }[] = [
   { icon: UserPlus, label: "Register", href: "/register", exact: true, roles: null },
+  { icon: QrCode, label: "My QR Code", href: "/qr", exact: true, roles: PARTNER_ONLY },
   { icon: Calendar, label: "Programme", href: "/programme", exact: true, roles: PROGRAMME_ROLES },
   { icon: Globe, label: "Partners", href: "/partners", exact: false, roles: PROGRAMME_ROLES },
   { icon: ScanLine, label: "Check In", href: "/admin/check-in", exact: false, roles: COORDINATION_ONLY },
   { icon: BarChart3, label: "Attendance", href: "/admin/attendance", exact: false, roles: COORDINATION_ONLY },
 ];
-
 export default function AppSidebar() {
   const pathname = usePathname();
   const [hasRegistered, setHasRegistered] = useState(false);
@@ -116,6 +116,41 @@ export default function AppSidebar() {
           </div>
         </div>
       </aside>
+
+      {visibleLinks.length > 1 && (
+        <nav className="md:hidden fixed bottom-0 left-0 w-full z-30 backdrop-blur-[24px] bg-[rgba(255,255,255,0.76)] border-t border-[rgba(255,255,255,0.55)]">
+          <div className="flex items-center px-1 py-1.5">
+            {visibleLinks.map(({ icon: Icon, label, href, exact }) => {
+              const active = exact ? pathname === href : pathname.startsWith(href);
+              return (
+                <Link
+                  key={href}
+                  href={href}
+                  className="flex-1 flex flex-col items-center gap-[2px] px-0.5 py-1.5"
+                >
+                  <div
+                    className={`flex flex-col items-center justify-center gap-[2px] px-3 py-1.5 rounded-[16px] transition-colors ${
+                      active ? "bg-[rgba(28,46,90,0.08)]" : ""
+                    }`}
+                  >
+                    <Icon
+                      className="w-[19px] h-[19px]"
+                      strokeWidth={2}
+                      style={{ color: active ? "#1C2E5A" : "#6B7590" }}
+                    />
+                    <span
+                      className="font-['Inter',sans-serif] font-semibold text-[9px] leading-[13.5px] tracking-[0.225px] text-center whitespace-nowrap"
+                      style={{ color: active ? "#1C2E5A" : "#6B7590" }}
+                    >
+                      {label}
+                    </span>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        </nav>
+      )}
     </>
   );
 }
