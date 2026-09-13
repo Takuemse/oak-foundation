@@ -1,3 +1,5 @@
+DROP FUNCTION IF EXISTS public.register_attendee(TEXT, TEXT, TEXT, TEXT, TEXT, TEXT, TEXT, TEXT, TEXT, TEXT, BOOLEAN);
+
 CREATE OR REPLACE FUNCTION public.register_attendee(
     p_first_name TEXT,
     p_last_name TEXT,
