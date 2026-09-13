@@ -50,7 +50,7 @@ export default function AppSidebar() {
     <>
       <header className="md:hidden w-full h-[82px] bg-[#162E55] flex flex-row items-center px-[16px] gap-[12px] shrink-0 z-30">
         <Image
-          src="/Logo-Oak-Foundation-White.svg"
+          src="/Logo-Oak-Foundation.svg2.svg"
           alt="Oak Foundation Logo"
           width={85}
           height={38}
