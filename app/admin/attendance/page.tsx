@@ -101,13 +101,13 @@ export default function AttendancePage() {
   }, [participants, search, roleFilter, statusFilter]);
 
   return (
-    <div className="min-h-screen bg-[#F4F6F8] flex text-[#0E1726] font-sans justify-center">
+    <div className="min-h-screen bg-[#F4F6F8] flex flex-col md:flex-row text-[#0E1726] font-sans justify-center">
       <AppSidebar />
 
       <div className="flex-1 flex justify-center">
-        <main className="flex flex-col items-start px-[32px] py-[40px] w-[672px] max-w-[672px]">
+        <main className="w-full max-w-full md:max-w-[672px] mx-auto min-h-screen px-4 pt-6 pb-10 md:px-8 md:py-10 flex flex-col items-start">
           {/* Header */}
-          <div className="flex flex-col items-start w-[608px] mb-[24px]">
+          <div className="w-full flex flex-col items-start mb-[24px]">
             <h1 className="font-['Chillax'] font-bold text-[24px] leading-[32px] tracking-[0px] text-[#0E1726]">
               Attendance
             </h1>
@@ -117,13 +117,13 @@ export default function AttendancePage() {
           </div>
 
           {error && (
-            <div className="bg-red-50 text-red-700 text-sm rounded-xl px-4 py-3 mb-4 w-[608px]">
+            <div className="bg-red-50 text-red-700 text-sm rounded-xl px-4 py-3 mb-4 w-full">
               {error}
             </div>
           )}
 
           {/* Summary Card */}
-          <div className="box-border flex flex-col items-center p-[40px] gap-[16px] w-[608px] bg-[#FFFFFF] border border-[rgba(28,46,90,0.1)] shadow-[0px_1px_3px_rgba(28,46,90,0.05),0px_4px_16px_rgba(28,46,90,0.07)] rounded-[24px] flex-none">
+          <div className="box-border flex flex-col items-center p-[40px] gap-[16px] w-full bg-[#FFFFFF] border border-[rgba(28,46,90,0.1)] shadow-[0px_1px_1.5px_rgba(28,46,90,0.05),0px_4px_8px_rgba(28,46,90,0.07)] rounded-[24px] flex-none">
             {loading ? (
               <p className="font-['Inter'] font-normal text-[14px] leading-[20px] tracking-[0px] text-[#6B7590] py-[40px]">
                 Loading…
@@ -151,7 +151,7 @@ export default function AttendancePage() {
                 <div className="flex flex-row justify-center items-center w-[80px] h-[80px] bg-[#EEF1F5] rounded-[24px]">
                   <Users size={36} strokeWidth={1.75} className="text-[#A8BBCE]" />
                 </div>
-                <div className="flex flex-col items-center w-[320px]">
+                <div className="flex flex-col items-center w-full max-w-[320px]">
                   <h2 className="font-['Chillax'] font-bold text-[18px] leading-[28px] tracking-[0px] text-[#0E1726] text-center">
                     No check-ins yet
                   </h2>
@@ -165,7 +165,7 @@ export default function AttendancePage() {
             <div className="pt-[8px]">
               <Link
                 href="/admin/check-in"
-                className="flex flex-row items-center justify-center gap-[8px] px-[24px] py-[14px] w-[262px] h-[52px] bg-gradient-to-br from-[#1C2E5A] to-[#2D4A82] shadow-[0px_4px_20px_rgba(28,46,90,0.3)] rounded-[16px] text-[#FFFFFF] font-['Chillax'] font-semibold text-[16px] leading-[24px] tracking-[0px] text-center hover:opacity-95 transition"
+                className="flex flex-row items-center justify-center gap-[8px] px-[24px] py-[14px] h-[52px] bg-gradient-to-br from-[#1C2E5A] to-[#2D4A82] shadow-[0px_4px_10px_rgba(28,46,90,0.3)] rounded-[16px] text-[#FFFFFF] font-['Chillax'] font-semibold text-[16px] leading-[24px] tracking-[0px] text-center hover:opacity-95 transition"
               >
                 <ScanLine size={16} />
                 Go to Check-In Scanner
@@ -175,7 +175,7 @@ export default function AttendancePage() {
 
           {/* Event Overview Card */}
           {summary && (
-            <div className="box-border flex flex-col items-start p-[20px] w-[608px] bg-[#FFFFFF] border border-[rgba(28,46,90,0.1)] shadow-[0px_1px_3px_rgba(28,46,90,0.05),0px_4px_16px_rgba(28,46,90,0.07)] rounded-[24px] mt-[16px]">
+            <div className="box-border flex flex-col items-start p-[20px] w-full bg-[#FFFFFF] border border-[rgba(28,46,90,0.1)] shadow-[0px_1px_1.5px_rgba(28,46,90,0.05),0px_4px_8px_rgba(28,46,90,0.07)] rounded-[24px] mt-[16px]">
               <span className="font-['Inter'] font-semibold text-[10px] leading-[15px] tracking-[1px] uppercase text-[#6B7590] mb-[12px]">
                 Event Overview
               </span>
@@ -210,7 +210,7 @@ export default function AttendancePage() {
 
           {/* Role Breakdown */}
           {!loading && participants.length > 0 && (
-            <div className="box-border flex flex-col items-start p-[20px] w-[608px] bg-[#FFFFFF] border border-[rgba(28,46,90,0.1)] shadow-[0px_1px_3px_rgba(28,46,90,0.05),0px_4px_16px_rgba(28,46,90,0.07)] rounded-[24px] mt-[16px]">
+            <div className="box-border flex flex-col items-start p-[20px] w-full bg-[#FFFFFF] border border-[rgba(28,46,90,0.1)] shadow-[0px_1px_1.5px_rgba(28,46,90,0.05),0px_4px_8px_rgba(28,46,90,0.07)] rounded-[24px] mt-[16px]">
               <span className="font-['Inter'] font-semibold text-[10px] leading-[15px] tracking-[1px] uppercase text-[#6B7590] mb-[12px]">
                 Role Breakdown
               </span>
@@ -234,7 +234,7 @@ export default function AttendancePage() {
 
           {/* Search & Filters */}
           {!loading && participants.length > 0 && (
-            <div className="w-[608px] flex flex-col sm:flex-row gap-[10px] mt-[16px]">
+            <div className="w-full flex flex-col sm:flex-row gap-[10px] mt-[16px]">
               <div className="flex-1 h-[48px] bg-white border border-[rgba(28,46,90,0.1)] rounded-[14px] px-[14px] flex items-center gap-2">
                 <Search size={15} className="text-[#A0AEC0] shrink-0" />
                 <input
@@ -271,7 +271,7 @@ export default function AttendancePage() {
 
           {/* Participant List */}
           {!loading && participants.length > 0 && (
-            <div className="w-[608px] flex flex-col gap-[8px] mt-[16px]">
+            <div className="w-full flex flex-col gap-[8px] mt-[16px]">
               <span className="font-['Inter'] font-semibold text-[10px] leading-[15px] tracking-[1px] uppercase text-[#6B7590]">
                 Participants ({filteredParticipants.length})
               </span>
@@ -331,7 +331,7 @@ export default function AttendancePage() {
               setError(null);
               setRefreshKey((k) => k + 1);
             }}
-            className="flex items-center justify-center gap-1.5 w-[608px] mt-[16px] border border-slate-200 text-slate-500 rounded-xl py-2 text-xs font-medium hover:bg-white transition"
+            className="flex items-center justify-center gap-1.5 w-full mt-[16px] border border-slate-200 text-slate-500 rounded-xl py-2 text-xs font-medium hover:bg-white transition"
           >
             <RefreshCw size={13} />
             Refresh

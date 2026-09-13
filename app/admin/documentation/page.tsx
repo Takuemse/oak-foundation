@@ -3,14 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { createBrowserSupabaseClient } from "@/app/lib/superbase/browser";
-import {
-  UserPlus,
-  ScanLine,
-  Calendar,
-  Globe,
-  LayoutGrid,
-  FileText,
-} from "lucide-react";
+import AdminSidebar from "@/app/components/AdminSidebar";
 
 type Photo = {
   id: string;
@@ -196,33 +189,10 @@ export default function AdminDocumentationPage() {
     setRefreshKey((k) => k + 1);
   }
 
-  return (
-    <div className="min-h-screen bg-slate-50 flex">
-      <aside className="hidden md:flex w-56 flex-col justify-between border-r border-slate-200 bg-white">
-        <div>
-          <div className="px-5 pt-6 pb-4 border-b border-slate-100">
-            <div className="text-lg font-bold text-slate-900 tracking-tight">
-              OAK <span className="font-normal text-slate-400">FOUNDATION</span>
-            </div>
-            <div className="text-[11px] uppercase tracking-wide text-slate-400 mt-1">
-              Partner Convening 2026
-            </div>
-          </div>
-          <nav className="px-3 py-4 space-y-1">
-            <SidebarLink icon={UserPlus} label="Register" href="/register" />
-            <SidebarLink icon={ScanLine} label="Check In" href="/admin/check-in" />
-            <SidebarLink icon={Calendar} label="Programme" href="/programme" />
-            <SidebarLink icon={Globe} label="Partners" href="/partners" />
-            <SidebarLink icon={LayoutGrid} label="Attendance" href="/admin/attendance" />
-            <SidebarLink icon={FileText} label="Documentation" href="/admin/documentation" active />
-          </nav>
-        </div>
-        <div className="px-5 py-4 text-xs text-slate-400 border-t border-slate-100">
-          Harare, Zimbabwe
-          <br />
-          9–11 March 2026
-        </div>
-      </aside>
+  
+      return (
+    <div className="min-h-screen bg-[#F4F6F8] flex">
+      <AdminSidebar />
 
       <main className="flex-1 px-4 py-6 sm:px-8 sm:py-10 max-w-xl mx-auto w-full">
         <div className="bg-[#0f1e3d] text-white rounded-xl px-5 py-4 mb-6">
@@ -338,29 +308,7 @@ export default function AdminDocumentationPage() {
   );
 }
 
-function SidebarLink({
-  icon: Icon,
-  label,
-  href,
-  active = false,
-}: {
-  icon: React.ComponentType<{ size?: number; strokeWidth?: number }>;
-  label: string;
-  href: string;
-  active?: boolean;
-}) {
-  return (
-    <Link
-      href={href}
-      className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-semibold transition ${
-        active ? "bg-[#0f1e3d] text-white" : "text-slate-500 hover:bg-slate-50"
-      }`}
-    >
-      <Icon size={18} strokeWidth={2} />
-      {label}
-    </Link>
-  );
-}
+
 
 function PhotoDropzone({
   postId,

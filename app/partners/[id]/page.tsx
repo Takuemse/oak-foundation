@@ -14,7 +14,11 @@ type Org = {
   website_url: string | null;
   description: string | null;
   logoUrl: string | null;
+  focus_areas?: string[];
+  partner_since?: string;
 };
+
+const isAcademic = (type: string | undefined) => type === "Academic";
 
 export default function PartnerDetailPage() {
   const params = useParams<{ id: string }>();
@@ -63,7 +67,7 @@ export default function PartnerDetailPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#F4F6F8] flex text-[#0E1726] font-sans justify-center">
+      <div className="min-h-screen bg-[#F4F6F8] flex flex-col md:flex-row text-[#0E1726] font-sans justify-center">
         <AppSidebar />
         <div className="flex-1 flex items-center justify-center">
           <p className="font-['Inter'] text-[14px] text-[#6B7590]">Loading partner details…</p>
@@ -74,19 +78,19 @@ export default function PartnerDetailPage() {
 
   if (notFound || !org) {
     return (
-      <div className="min-h-screen bg-[#F4F6F8] flex text-[#0E1726] font-sans justify-center">
+      <div className="min-h-screen bg-[#F4F6F8] flex flex-col md:flex-row text-[#0E1726] font-sans justify-center">
         <AppSidebar />
-        <div className="flex-1 flex flex-col items-center justify-center p-[32px] gap-[16px]">
-          <div className="w-[56px] h-[56px] rounded-[16px] bg-[#F1F3F5] flex items-center justify-center text-[#ADB5BD]">
+        <div className="flex-1 flex flex-col items-center justify-center p-8 gap-4 text-center">
+          <div className="w-14 h-14 rounded-[16px] bg-[#F1F3F5] flex items-center justify-center text-[#ADB5BD]">
             <Globe size={24} strokeWidth={1.75} />
           </div>
           <p className="font-['Inter'] text-[16px] font-semibold text-[#0E1726]">Partner not found</p>
-          <p className="font-['Inter'] text-[14px] text-[#6B7590] text-center max-w-[320px]">
+          <p className="font-['Inter'] text-[14px] text-[#6B7590] max-w-[320px]">
             This organisation may not be part of the convening directory.
           </p>
           <Link
             href="/partners"
-            className="px-[20px] py-[12px] bg-[#162E55] text-white rounded-[16px] font-['Inter'] font-semibold text-[14px] shadow-sm hover:bg-[#1c3a6b] transition"
+            className="px-5 py-3 bg-[#162E55] text-white rounded-[16px] font-['Inter'] font-semibold text-[14px] shadow-sm hover:bg-[#1c3a6b] transition"
           >
             Back to Partner Directory
           </Link>
@@ -96,175 +100,144 @@ export default function PartnerDetailPage() {
   }
 
   const initialsStr = initials(org.name);
+  const focusAreas = org.focus_areas && org.focus_areas.length > 0 ? org.focus_areas : ["Democracy", "Human Rights", "Justice"];
+  const contactInitials = "OT";
 
   return (
-    <div className="min-h-screen bg-[#F4F6F8] flex text-[#0E1726] font-sans justify-center">
+    <div className="min-h-screen bg-[#F4F6F8] flex flex-col md:flex-row text-[#0E1726] font-sans justify-center">
       <AppSidebar />
 
       <div className="flex-1 flex justify-center">
-        {/* PartnersScreen */}
-        <main className="flex flex-col items-start px-[32px] py-[40px] w-[672px] max-w-[672px]">
-          
-          {/* Button (Back navigation) */}
-          <div className="flex flex-row items-center p-0 gap-[8px] w-[142px] h-[20px] flex-none order-0 flex-grow-0">
-            <Link href="/partners" className="flex items-center gap-[8px] group w-full h-full">
-              <div className="flex flex-col items-start p-0 isolation-isolate w-[16px] h-[16px] flex-none order-0 flex-grow-0 relative">
-                <div className="absolute w-[16px] h-[16px] left-0 top-0 transform rotate-180 flex items-center justify-center flex-none order-0 z-0">
-                  <ChevronLeft className="w-[16px] h-[16px] text-[#1C2E5A]" />
-                </div>
-              </div>
-              <span className="w-[118px] h-[20px] font-['Inter'] font-semibold text-[14px] leading-[20px] text-center text-[#1C2E5A] flex-none order-1 flex-grow-0 group-hover:underline">
-                Partner Directory
-              </span>
-            </Link>
-          </div>
+        <main className="w-full max-w-full md:max-w-[672px] mx-auto min-h-screen px-4 pt-6 pb-10 md:px-8 md:py-10 flex flex-col items-start gap-0">
+          {/* Back navigation */}
+          <Link href="/partners" className="flex items-center gap-2 group">
+            <ChevronLeft className="w-4 h-4 text-[#1C2E5A]" />
+            <span className="font-['Inter'] font-semibold text-[14px] leading-[20px] text-[#1C2E5A] group-hover:underline">
+              Partner Directory
+            </span>
+          </Link>
 
-          {/* Container:margin */}
-          <div className="flex flex-col items-start pt-[20px] pr-0 pb-0 pl-0 w-[608px] h-[172.5px] flex-none order-1 self-stretch flex-grow-0">
-            {/* Container (Hero Card) */}
-            <div className="relative w-[608px] h-[152.5px] bg-[#162E55] shadow-[0px_1px_3px_rgba(28,46,90,0.05),0px_4px_16px_rgba(28,46,90,0.07)] rounded-[24px] overflow-hidden flex-none order-0 self-stretch flex-grow-0">
-              {/* Decorative circle */}
-              <div className="absolute w-[144px] h-[144px] left-[496px] top-[40.5px] bg-[rgba(255,255,255,0.1)] rounded-[33554400px]" />
-
-              {/* Container */}
-              <div className="absolute flex flex-col items-start p-0 w-[560px] h-[104.5px] left-[24px] top-[24px]">
-                
-                {/* Container (Logo & Title Group) */}
-                <div className="flex flex-row items-start p-0 gap-[16px] w-[560px] h-[64px] flex-none order-0 self-stretch flex-grow-0">
-                  
-                  {/* Logo Container */}
-                  <div className="flex flex-row justify-center items-center p-0 w-[64px] h-[64px] bg-[rgba(255,255,255,0.2)] rounded-[16px] flex-none order-0 flex-grow-0 overflow-hidden">
+          {/* Hero Card */}
+          <div className="w-full pt-5">
+            <div className="relative w-full bg-[#162E55] shadow-[0px_1px_3px_rgba(28,46,90,0.05),0px_4px_16px_rgba(28,46,90,0.07)] rounded-[24px] overflow-hidden p-6">
+              <div
+                className="absolute w-36 h-36 rounded-full pointer-events-none"
+                style={{ right: "-24px", top: "-20px", background: "rgba(255,255,255,0.1)" }}
+              />
+              <div className="relative z-10 flex flex-col items-start">
+                <div className="flex items-start gap-4 w-full">
+                  <div
+                    className={`w-16 h-16 rounded-[16px] flex items-center justify-center shrink-0 overflow-hidden ${
+                      isAcademic(org.organization_type) ? "" : "bg-white/20"
+                    }`}
+                    style={
+                      isAcademic(org.organization_type)
+                        ? { backgroundImage: "linear-gradient(135deg, #6B7280 0%, #9CA3AF 100%)" }
+                        : undefined
+                    }
+                  >
                     {org.logoUrl ? (
                       <img src={org.logoUrl} alt={`${org.name} logo`} className="w-full h-full object-cover" />
                     ) : (
-                      <span className="w-[32px] h-[20px] font-['Chillax'] font-bold text-[16px] leading-[20px] text-center text-[#FFFFFF] flex-none order-0 flex-grow-0">
-                        {initialsStr}
-                      </span>
+                      <span className="font-chillax font-bold text-[16px] text-white">{initialsStr}</span>
                     )}
                   </div>
 
-                  {/* Title Container */}
-                  <div className="flex flex-col items-start p-0 w-[480px] h-[47px] flex-none order-1 flex-grow-0">
-                    <div className="flex flex-col items-start p-0 w-full h-[15px] flex-none order-0 self-stretch flex-grow-0">
-                      <span className="w-full h-[15px] font-['Inter'] font-semibold text-[10px] leading-[15px] tracking-[1px] uppercase text-[rgba(255,255,255,0.6)] flex-none order-0 flex-grow-0 truncate">
-                        {org.organization_type ? `${org.organization_type} · OAK PARTNER` : "OAK PARTNER"} {parentName ? `· Part of ${parentName}` : ""}
-                      </span>
-                    </div>
-                    <div className="flex flex-col items-start pt-[4px] pr-0 pb-0 pl-0 w-full h-[32px] flex-none order-1 flex-grow-0">
-                      <h2 className="w-full h-[28px] font-['Chillax'] font-bold text-[20px] leading-[28px] text-[#FFFFFF] flex-none order-0 flex-grow-0 truncate">
-                        {org.name}
-                      </h2>
-                    </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-['Inter'] font-semibold text-[10px] leading-[15px] tracking-[1px] uppercase text-white/60 truncate">
+                      {org.organization_type || "Partner"}
+                      {org.partner_since ? ` · Partner since ${org.partner_since}` : ""}
+                      {parentName ? ` · Part of ${parentName}` : ""}
+                    </p>
+                    <h2 className="font-chillax font-bold text-[20px] leading-[27.5px] text-white pt-1 truncate">
+                      {org.name}
+                    </h2>
                   </div>
-
                 </div>
 
-                {/* Focus Areas / Badges Container */}
-                <div className="flex flex-row items-start pt-[16px] pr-0 pb-0 pl-0 gap-[8px] w-[560px] h-[40.5px] flex-none order-1 flex-grow-0 overflow-x-auto">
-                  {["Democracy", "Human Rights", "Justice"].map((fa, idx) => (
-                    <div
+                <div className="flex items-center gap-2 flex-wrap pt-4">
+                  {focusAreas.map((fa, idx) => (
+                    <span
                       key={idx}
-                      className="flex flex-row items-center py-[4px] px-[10px] gap-[4px] h-[24.5px] bg-[rgba(255,255,255,0.2)] rounded-[100px] flex-none order-0 self-stretch flex-grow-0"
+                      className="px-[10px] py-[4px] bg-white/20 rounded-full font-['Inter'] font-semibold text-[11px] tracking-[0.22px] text-white"
                     >
-                      <span className="font-['Inter'] font-semibold text-[11px] leading-[16px] tracking-[0.22px] text-[#FFFFFF] flex-none order-0 flex-grow-0 whitespace-nowrap">
-                        {fa}
-                      </span>
-                    </div>
+                      {fa}
+                    </span>
                   ))}
                 </div>
-
               </div>
             </div>
           </div>
 
-          {/* Container:margin (About) */}
-          <div className="flex flex-col items-start pt-[16px] pr-0 pb-0 pl-0 w-[608px] h-[131px] flex-none order-2 self-stretch flex-grow-0">
-            <div className="box-border flex flex-col items-start p-[20px] w-[608px] h-[115px] bg-[#FFFFFF] border border-[rgba(28,46,90,0.1)] shadow-[0px_1px_3px_rgba(28,46,90,0.05),0px_4px_16px_rgba(28,46,90,0.07)] rounded-[24px] flex-none order-0 self-stretch flex-grow-0">
-              <div className="flex flex-col items-start p-0 w-[566px] h-[15px] flex-none order-0 self-stretch flex-grow-0">
-                <span className="w-[40px] h-[15px] font-['Inter'] font-semibold text-[10px] leading-[15px] tracking-[1px] uppercase text-[#6B7590] flex-none order-0 flex-grow-0">
-                  About
-                </span>
-              </div>
-              <div className="flex flex-col items-start pt-[12px] pr-0 pb-0 pl-0 w-[566px] h-[58px] flex-none order-1 self-stretch flex-grow-0">
-                <p className="w-[566px] font-['Inter'] font-normal text-[14px] leading-[23px] text-[#0E1726] flex-none order-0 flex-grow-0 line-clamp-2">
-                  {org.description ?? "This partner hasn't provided a description yet."}
-                </p>
-              </div>
+          {/* About */}
+          <div className="w-full pt-4">
+            <div className="w-full bg-white border border-[rgba(28,46,90,0.1)] shadow-[0px_1px_1.5px_rgba(28,46,90,0.05),0px_4px_8px_rgba(28,46,90,0.07)] rounded-[24px] p-5 flex flex-col items-start">
+              <span className="font-['Inter'] font-semibold text-[10px] leading-[15px] tracking-[1px] uppercase text-[#6B7590]">
+                About
+              </span>
+              <p className="font-['Inter'] font-normal text-[14px] leading-[22.75px] text-[#0E1726] pt-3">
+                {org.description ?? "This partner hasn't provided a description yet."}
+              </p>
             </div>
           </div>
 
-          {/* Container:margin (Contact at Convening) */}
-          <div className="flex flex-col items-start pt-[16px] pr-0 pb-0 pl-0 w-[608px] h-[129px] flex-none order-3 self-stretch flex-grow-0">
-            <div className="box-border flex flex-col items-start p-[20px] w-[608px] h-[113px] bg-[#FFFFFF] border border-[rgba(28,46,90,0.1)] shadow-[0px_1px_3px_rgba(28,46,90,0.05),0px_4px_16px_rgba(28,46,90,0.07)] rounded-[24px] flex-none order-0 self-stretch flex-grow-0">
-              <div className="flex flex-col items-start p-0 w-[566px] h-[15px] flex-none order-0 self-stretch flex-grow-0">
-                <span className="font-['Inter'] font-semibold text-[10px] leading-[15px] tracking-[1px] uppercase text-[#6B7590] whitespace-nowrap">
-                  Contact at Convening
-                </span>
-              </div>
-              <div className="flex flex-row items-center pt-[12px] pr-0 pb-0 pl-0 gap-[12px] w-[566px] h-[56px] flex-none order-1 flex-grow-0">
-                <div className="flex flex-row justify-center items-center p-0 w-[44px] h-[44px] bg-[#162E55] rounded-[16px] flex-none order-0 flex-grow-0">
-                  <span className="w-[22px] h-[20px] font-['Inter'] font-bold text-[14px] leading-[20px] text-center text-[#FFFFFF] flex-none order-0 flex-grow-0">
-                    MS
+          {/* Contact at Convening */}
+          <div className="w-full pt-4">
+            <div className="w-full bg-white border border-[rgba(28,46,90,0.1)] shadow-[0px_1px_1.5px_rgba(28,46,90,0.05),0px_4px_8px_rgba(28,46,90,0.07)] rounded-[24px] p-5 flex flex-col items-start">
+              <span className="font-['Inter'] font-semibold text-[10px] leading-[15px] tracking-[1px] uppercase text-[#6B7590]">
+                Contact at Convening
+              </span>
+              <div className="flex items-center gap-3 pt-3 min-w-0 w-full">
+                <div className="w-11 h-11 bg-[#162E55] rounded-[16px] flex items-center justify-center shrink-0">
+                  <span className="font-['Inter'] font-bold text-[14px] text-white">{contactInitials}</span>
+                </div>
+                <div className="flex flex-col items-start min-w-0">
+                  <span className="font-['Inter'] font-semibold text-[14px] leading-[20px] text-[#0E1726] truncate w-full">
+                    OAK Coordination Team
+                  </span>
+                  <span className="font-['Inter'] font-normal text-[12px] leading-[16px] text-[#6B7590] truncate w-full">
+                    partnerships@oakfnd.org
                   </span>
                 </div>
-                <div className="flex flex-col items-start p-0 w-[110.34px] h-[36px] flex-none order-1 flex-grow-0">
-                  <div className="flex flex-col items-start p-0 w-[110.34px] h-[20px] flex-none order-0 self-stretch flex-grow-0">
-                    <span className="w-[98px] h-[20px] font-['Inter'] font-semibold text-[14px] leading-[20px] text-[#0E1726] flex-none order-0 flex-grow-0 truncate">
-                      Maria Schmidt
-                    </span>
-                  </div>
-                  <div className="flex flex-col items-start p-0 w-[110.34px] h-[16px] flex-none order-1 self-stretch flex-grow-0">
-                    <span className="w-[110px] h-[16px] font-['Inter'] font-normal text-[12px] leading-[16px] text-[#6B7590] flex-none order-0 flex-grow-0 truncate">
-                      m.schmidt@osf.org
-                    </span>
-                  </div>
-                </div>
               </div>
             </div>
           </div>
 
-          {/* Container:margin (Visit Website & Send Message Actions) */}
-          <div className="flex flex-col items-start pt-[16px] pr-0 pb-0 pl-0 w-[608px] h-[132px] flex-none order-4 self-stretch flex-grow-0 gap-[10px]">
-            
+          {/* Actions */}
+          <div className="w-full flex flex-col gap-[10px] pt-4">
             {org.website_url && (
               <a
                 href={org.website_url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex flex-row justify-between items-center px-[20px] py-[16px] w-[608px] h-[52px] bg-[#162E55] shadow-[0px_4px_16px_rgba(0,0,0,0.15)] rounded-[16px] flex-none order-0 flex-grow-0 hover:bg-[#1c3a6b] transition"
+                className="w-full flex items-center justify-between px-5 py-4 bg-[#162E55] shadow-[0px_4px_10px_rgba(28,46,90,0.3)] rounded-[16px] hover:bg-[#1c3a6b] transition"
               >
-                <div className="flex flex-row items-center p-0 gap-[8px] w-[115px] h-[20px] flex-none order-0 flex-grow-0">
-                  <Globe className="w-[15px] h-[15px] text-white flex-none order-0 flex-grow-0" />
-                  <span className="w-[92px] h-[20px] font-['Chillax'] font-semibold text-[14px] leading-[20px] text-[#FFFFFF] flex-none order-1 flex-grow-0">
+                <div className="flex items-center gap-2">
+                  <Globe className="w-[15px] h-[15px] text-white" />
+                  <span className="font-chillax font-semibold text-[14px] leading-[20px] text-white">
                     Visit Website
                   </span>
                 </div>
-                <ExternalLink className="w-[14px] h-[14px] text-white flex-none order-1 flex-grow-0" />
+                <ExternalLink className="w-[14px] h-[14px] text-white" />
               </a>
             )}
 
-            {/* Button:margin */}
-            <div className="flex flex-col items-center pt-[10px] pr-0 pb-0 pl-0 w-[608px] h-[64px] flex-none order-1 self-stretch flex-grow-0">
-              <button
-                onClick={() => {
-                  window.location.href = "mailto:m.schmidt@osf.org";
-                }}
-                className="box-border flex flex-row justify-between items-center px-[20px] py-[16px] w-[608px] h-[54px] bg-[#FFFFFF] border border-[rgba(28,46,90,0.1)] shadow-[0px_1px_3px_rgba(28,46,90,0.05),0px_4px_16px_rgba(28,46,90,0.07)] rounded-[24px] flex-none order-0 flex-grow-0 hover:bg-[#F9FAFB] transition cursor-pointer"
-              >
-                <div className="flex flex-row items-center p-0 gap-[8px] w-[123px] h-[20px] flex-none order-0 flex-grow-0">
-                  <Mail className="w-[15px] h-[15px] text-[#0E1726] flex-none order-0 flex-grow-0" />
-                  <span className="w-[100px] h-[20px] font-['Inter'] font-semibold text-[14px] leading-[20px] text-center text-[#0E1726] flex-none order-1 flex-grow-0">
-                    Send Message
-                  </span>
-                </div>
-                <div className="w-[14px] h-[14px] flex-none order-1 flex-grow-0 flex items-center justify-center">
-                  <ChevronLeft className="w-[14px] h-[14px] text-[#6B7590] transform rotate-180" />
-                </div>
-              </button>
-            </div>
-
+            <button
+              type="button"
+              onClick={() => {
+                window.location.href = "mailto:partnerships@oakfnd.org";
+              }}
+              className="w-full flex items-center justify-between px-5 py-4 bg-white border border-[rgba(28,46,90,0.1)] shadow-[0px_1px_1.5px_rgba(28,46,90,0.05),0px_4px_8px_rgba(28,46,90,0.07)] rounded-[24px] hover:bg-slate-50 transition"
+            >
+              <div className="flex items-center gap-2">
+                <Mail className="w-[15px] h-[15px] text-[#0E1726]" />
+                <span className="font-['Inter'] font-semibold text-[14px] leading-[20px] text-[#0E1726]">
+                  Send Message
+                </span>
+              </div>
+              <ChevronLeft className="w-[14px] h-[14px] text-[#6B7590] rotate-180" />
+            </button>
           </div>
-
         </main>
       </div>
     </div>
