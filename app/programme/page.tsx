@@ -86,12 +86,12 @@ const SEED_SESSION_NOTES: SessionNoteEntry[] = [
 ];
 
 const GALLERY_PHOTOS = [
-  "Opening Plenary Session",
-  "Roundtable Discussion",
-  "Workshop In Progress",
-  "Welcome Reception Dinner",
-  "Keynote Speaker",
-  "Breakout Group Discussion",
+  { title: "Opening Plenary Session", src: "/images/opening-plenary-session.png" },
+  { title: "Roundtable Discussion", src: "/images/roundtable-discussion.png" },
+  { title: "Workshop In Progress", src: "/images/Workshop-in-progress.png" },
+  { title: "Welcome Reception Dinner", src: "/images/welcome-reception-dinner.png" },
+  { title: "Keynote Speaker", src: "/images/Keynote-speaker.png" },
+  { title: "Breakout Group Discussion", src: "/images/breakout-group-discussion.png" },
 ];
 
 const KEY_TAKEAWAYS = [
@@ -244,11 +244,11 @@ export default function ProgrammePage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#F4F6F8] flex flex-col md:flex-row text-[#0E1726] font-sans justify-center">
+    <div className="min-h-screen bg-[#F4F5F7] flex flex-col md:flex-row text-[#0E1726] font-sans justify-center">
       <AppSidebar />
 
       <div className="flex-1 flex justify-center">
-        <main className="w-full max-w-full md:max-w-[672px] mx-auto min-h-screen px-4 pt-6 pb-10 md:px-8 md:py-10 flex flex-col items-start gap-[20px]">
+        <main className="w-full max-w-full md:max-w-[672px] mx-auto min-h-screen px-4 pt-6 pb-10 md:px-8 md:py-10 flex flex-col items-start gap-[10px]">
           <div className="w-full flex flex-col items-start">
             <h1 className="font-chillax font-bold text-[24px] leading-[32px] text-[#0E1726]">
               Programme
@@ -258,13 +258,13 @@ export default function ProgrammePage() {
             </p>
           </div>
 
-          <div className="w-full h-[40px] bg-[#E5E8EE] p-[4px] rounded-[16px] flex items-center justify-between">
+          <div className="w-full h-[40px] bg-[#E5E8EE] p-[4px] rounded-[7px] flex items-center justify-between">
             <button
               type="button"
               onClick={() => setActiveTab("schedule")}
               className={`w-[140px] h-[32px] rounded-[12px] flex items-center justify-center font-['Inter'] font-semibold text-[12px] leading-[16px] capitalize transition ${
                 activeTab === "schedule"
-                  ? "bg-white shadow-[0px_1px_4px_rgba(0,0,0,0.08)] text-[#0E1726]"
+                  ? "bg-white shadow-[0px_1px_2px_rgba(0,0,0,0.08)] text-[#0E1726]"
                   : "text-[#6B7590] hover:text-[#0E1726]"
               }`}
             >
@@ -273,9 +273,9 @@ export default function ProgrammePage() {
             <button
               type="button"
               onClick={() => setActiveTab("docs")}
-              className={`w-[116px] h-[32px] rounded-[12px] flex items-center justify-center font-['Inter'] font-semibold text-[12px] leading-[16px] capitalize transition ${
+              className={`w-[56px] h-[32px] rounded-[12px] flex items-center justify-center font-['Inter'] font-semibold text-[12px] leading-[16px] capitalize transition ${
                 activeTab === "docs"
-                  ? "bg-white shadow-[0px_1px_4px_rgba(0,0,0,0.08)] text-[#0E1726]"
+                  ? "bg-white shadow-[0px_1px_2px_rgba(0,0,0,0.08)] text-[#0E1726]"
                   : "text-[#6B7590] hover:text-[#0E1726]"
               }`}
             >
@@ -300,8 +300,8 @@ export default function ProgrammePage() {
               No programme has been published yet.
             </div>
           ) : (
-            <div className="w-full flex flex-col items-start gap-[16px]">
-              <div className="w-full flex items-center gap-[10px]">
+            <div className="w-full flex flex-col items-start">
+              <div className="w-full flex items-center gap-[10px] pt-[5px]">
                 {days.map((day) => {
                   const { weekday, dayMonth } = dayTabLabel(day.event_date);
                   const active = day.id === activeDay.id;
@@ -339,57 +339,59 @@ export default function ProgrammePage() {
               </div>
 
               {featuredSession && (
-                <button
-                  type="button"
-                  onClick={() => openSession(featuredSession)}
-                  className="w-full text-left rounded-[24px] p-5 text-white flex flex-col relative overflow-hidden shadow-[0px_1px_3px_rgba(28,46,90,0.05),0px_4px_16px_rgba(28,46,90,0.07)] hover:opacity-95 transition"
-                  style={{ backgroundImage: "linear-gradient(165deg, #0E1726 0%, #1A2A4A 100%)" }}
-                >
-                  <div
-                    className="absolute -right-8 -top-8 w-40 h-40 rounded-full pointer-events-none"
-                    style={{
-                      background:
-                        "radial-gradient(circle, rgba(168,187,206,0.18) 0%, rgba(168,187,206,0) 70%)",
-                    }}
-                  />
-                  <div className="relative z-10 flex flex-col">
-                    <div className="flex items-center gap-[8px] font-['Inter'] font-semibold text-[10px] leading-[15px] tracking-[1px]">
-                      <Star className="w-[11px] h-[11px] fill-current text-[#A8BBCE]" />
-                      <span className="text-[#A8BBCE] uppercase">Featured</span>
-                      <span className="text-white/20">·</span>
-                      <span className="text-white/40 normal-case tracking-normal">
-                        {formatTime(featuredSession.start_time)}–{formatTime(featuredSession.end_time)}
-                      </span>
-                    </div>
-                    <div className="font-chillax font-bold text-[20px] leading-[27.5px] pt-[12px]">
-                      {featuredSession.title}
-                    </div>
-                    {featuredSession.presenter_name && (
-                      <div className="flex items-center gap-[6px] pt-[12px]">
-                        <div className="w-5 h-5 rounded-full bg-white/10 flex items-center justify-center shrink-0">
-                          <span className="font-['Inter'] font-bold text-[9px] text-white">
-                            {featuredSession.presenter_name.charAt(0)}
+                <div className="w-full pt-[30px]">
+                  <button
+                    type="button"
+                    onClick={() => openSession(featuredSession)}
+                    className="w-full text-left rounded-[24px] p-5 text-white flex flex-col relative overflow-hidden shadow-[0px_1px_3px_rgba(28,46,90,0.05),0px_4px_16px_rgba(28,46,90,0.07)] hover:opacity-95 transition"
+                    style={{ backgroundImage: "linear-gradient(165deg, #0E1726 0%, #1A2A4A 100%)" }}
+                  >
+                    <div
+                      className="absolute -right-8 -top-8 w-40 h-40 rounded-full pointer-events-none"
+                      style={{
+                        background:
+                          "radial-gradient(circle, rgba(168,187,206,0.18) 0%, rgba(168,187,206,0) 70%)",
+                      }}
+                    />
+                    <div className="relative z-10 flex flex-col">
+                      <div className="flex items-center gap-[8px] font-['Inter'] font-semibold text-[10px] leading-[15px] tracking-[1px]">
+                        <Star className="w-[11px] h-[11px] fill-current text-[#A8BBCE]" />
+                        <span className="text-[#A8BBCE] uppercase">Featured</span>
+                        <span className="text-white/20 text-[16px] leading-[24px]">·</span>
+                        <span className="text-white/40 normal-case tracking-normal">
+                          {formatTime(featuredSession.start_time)}–{formatTime(featuredSession.end_time)}
+                        </span>
+                      </div>
+                      <div className="font-chillax font-bold text-[20px] leading-[27.5px] pt-[12px]">
+                        {featuredSession.title}
+                      </div>
+                      {featuredSession.presenter_name && (
+                        <div className="flex items-center gap-[6px] pt-[12px]">
+                          <div className="w-5 h-5 rounded-full bg-white/10 flex items-center justify-center shrink-0">
+                            <span className="font-['Inter'] font-bold text-[9px] text-white">
+                              {featuredSession.presenter_name.charAt(0)}
+                            </span>
+                          </div>
+                          <span className="font-['Inter'] text-[14px] leading-[20px] text-[rgba(168,187,206,0.7)]">
+                            {featuredSession.presenter_name}
+                            {featuredSession.presenter_org ? ` · ${featuredSession.presenter_org}` : ""}
                           </span>
                         </div>
-                        <span className="font-['Inter'] text-[14px] leading-[20px] text-[rgba(168,187,206,0.7)]">
-                          {featuredSession.presenter_name}
-                          {featuredSession.presenter_org ? ` · ${featuredSession.presenter_org}` : ""}
-                        </span>
-                      </div>
-                    )}
-                    {featuredSession.location && (
-                      <div className="flex items-center gap-[4px] pt-[12px]">
-                        <MapPin className="w-[11px] h-[11px] text-[rgba(168,187,206,0.45)]" />
-                        <span className="font-['Inter'] text-[12px] leading-[16px] text-[rgba(168,187,206,0.45)]">
-                          {featuredSession.location}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                </button>
+                      )}
+                      {featuredSession.location && (
+                        <div className="flex items-center gap-[4px] pt-[12px]">
+                          <MapPin className="w-[11px] h-[11px] text-[rgba(168,187,206,0.45)]" />
+                          <span className="font-['Inter'] text-[12px] leading-[16px] text-[rgba(168,187,206,0.45)]">
+                            {featuredSession.location}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </button>
+                </div>
               )}
 
-              <div className="flex items-center gap-[12px] flex-wrap">
+              <div className="flex items-center gap-[12px] flex-wrap pt-[26px]">
                 {(Object.keys(CATEGORY_STYLES) as SessionCategory[])
                   .filter((cat) => cat !== "break")
                   .map((cat) => (
@@ -402,20 +404,22 @@ export default function ProgrammePage() {
                   ))}
               </div>
 
-              <div className="w-full flex flex-col gap-[10px]">
-                {sortedSessions.map((session) => {
+              <div className="w-full flex flex-col gap-[8px] pt-[26px]">
+                {sortedSessions.map((session, idx) => {
                   const style = CATEGORY_STYLES[session.category];
                   if (session.category === "break") {
                     return (
                       <div
                         key={session.id}
-                        className="w-full flex items-center gap-3 py-1.5 text-[#A0AEC0]"
+                        className={`w-full flex items-center gap-3 py-1.5 px-1 text-[#6B7590] ${
+                          idx > 0 ? "my-[6px]" : ""
+                        }`}
                       >
                         <span className="font-['Consolas',monospace] text-[12px] leading-[16px] w-[40px] shrink-0">
                           {formatTime(session.start_time)}
                         </span>
                         <span className="flex-1 h-px bg-[rgba(28,46,90,0.1)]" />
-                        <span className="font-['Inter'] text-[12px] leading-[16px] text-[#6B7590]">
+                        <span className="font-['Inter'] text-[12px] leading-[16px] text-[#6B7590] whitespace-nowrap">
                           {session.title}
                         </span>
                         <span className="flex-1 h-px bg-[rgba(28,46,90,0.1)]" />
@@ -438,7 +442,7 @@ export default function ProgrammePage() {
                         </div>
                       </div>
                       <div className="flex-1 flex flex-col min-w-0">
-                        <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-start justify-between gap-2">
                           <span className="font-['Inter'] font-semibold text-[14px] leading-[19.25px] text-[#0E1726] truncate">
                             {session.title}
                           </span>
@@ -467,7 +471,7 @@ export default function ProgrammePage() {
                           </span>
                         )}
                       </div>
-                      <div className="pt-0.5 shrink-0">
+                      <div className="pt-1 shrink-0">
                         <ChevronRight className="w-[14px] h-[14px] text-[#A8BBCE]" />
                       </div>
                     </button>
@@ -589,19 +593,21 @@ export default function ProgrammePage() {
                     {GALLERY_PHOTOS.length} photos
                   </span>
                 </div>
-                <div className="w-full grid grid-cols-2 gap-[10px] pt-3">
-                  {GALLERY_PHOTOS.map((caption) => (
-                    <div
-                      key={caption}
-                      className="bg-[#E5E8EE] rounded-[16px] aspect-square flex flex-col items-center justify-center gap-2 overflow-hidden"
-                    >
-                      <ImageIcon className="w-6 h-6 text-[#A8BBCE]" />
-                      <span className="font-['Inter'] text-[11px] text-[#6B7590] px-3 text-center">
-                        {caption}
-                      </span>
-                    </div>
-                  ))}
+          <div className="w-full grid grid-cols-2 gap-[10px] pt-3">
+               {GALLERY_PHOTOS.map((photo) => (
+        <div
+                  key={photo.title}
+                      className="bg-[#E5E8EE] rounded-[16px] aspect-square flex flex-col items-center justify-center gap-2 overflow-hidden relative"
+    >
+               <img
+                       src={photo.src}
+                      alt={photo.title}
+                          className="w-full h-full object-cover absolute inset-0"
+                 />
+              
                 </div>
+                        ))}
+                      </div>
               </div>
 
               {/* Key Takeaways */}
