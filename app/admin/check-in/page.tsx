@@ -1,10 +1,9 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
 import { Html5Qrcode } from "html5-qrcode";
 import { ScanLine, CheckCircle2, XCircle, AlertCircle, Phone } from "lucide-react";
-import AppSidebar from "@/app/components/AppSidebar";
+import AdminSidebar from "@/app/components/AdminSidebar";
 
 type CheckInResult = {
   success: boolean;
@@ -68,8 +67,6 @@ const MOCK_SIMULATIONS = [
 ];
 
 export default function CheckInPage() {
-  const router = useRouter();
-  const [roleChecked, setRoleChecked] = useState(false);
   const [qrToken, setQrToken] = useState("");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<CheckInResult | null>(null);
@@ -78,14 +75,14 @@ export default function CheckInPage() {
    const scannerRef = useRef<Html5Qrcode | null>(null);
   const isSubmittingRef = useRef(false);
 
-  useEffect(() => {
-    const role = sessionStorage.getItem("oak_role");
-    if (role !== "Coordination Team") {
-      router.replace("/register");
-      return;
-    }
-    setRoleChecked(true);
-  }, [router]);
+  // No client-side role check here — this route is protected server-side
+  // by proxy.ts, which requires a real, authenticated admin session before
+  // this page is ever served. (Previously this checked
+  // sessionStorage.getItem("oak_role") === "Coordination Team", a leftover
+  // from when Coordination Team self-registered through the public form
+  // and never had a real session. Since Coordination Team now signs in via
+  // /admin/login, that value is never set, so this guard would incorrectly
+  // bounce every real admin straight to /register.)
 
   async function submitCheckIn(token: string) {
     if (!token.trim() || isSubmittingRef.current) return;
@@ -122,7 +119,6 @@ export default function CheckInPage() {
 
   // Camera initialization effect
    useEffect(() => {
-    if (!roleChecked) return;
     if (result) return; // Do not boot camera if a result card is displayed
 
     let isMounted = true;
@@ -178,7 +174,7 @@ export default function CheckInPage() {
         }
       }
     };
-  }, [result, roleChecked]);
+  }, [result]);
 
   function handleManualSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -189,11 +185,9 @@ export default function CheckInPage() {
     setCameraError(null);
   }
 
-  if (!roleChecked) return null;
-
   return (
     <div className="min-h-screen bg-[#F4F6F8] flex flex-col md:flex-row text-slate-800 font-sans justify-center">
-      <AppSidebar />
+      <AdminSidebar />
 
       <div className="flex-1 flex justify-center">
         <main className="w-full max-w-[672px] min-h-screen px-[16px] md:px-[32px] py-[24px] md:py-[40px] flex flex-col items-start">

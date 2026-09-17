@@ -1,21 +1,48 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
-import { ScanLine, BarChart3, Globe, FileText, LogOut } from "lucide-react";
+import { ScanLine, BarChart3, Globe, FileText, LogOut, LayoutDashboard, Users } from "lucide-react";
 import { createBrowserSupabaseClient } from "@/app/lib/superbase/browser";
 
-const ADMIN_LINKS = [
+// Coordination Team (either tier gets these — day-of operational tools)
+const OPERATIONAL_LINKS = [
   { icon: ScanLine, label: "Check In", href: "/admin/check-in" },
   { icon: BarChart3, label: "Attendance", href: "/admin/attendance" },
+];
+
+// Lead Organizer only — sensitive data, publishing, partner management
+const LEAD_ORGANIZER_LINKS = [
+  { icon: LayoutDashboard, label: "Dashboard", href: "/admin/dashboard" },
   { icon: Globe, label: "Partners", href: "/admin/partners" },
   { icon: FileText, label: "Documentation", href: "/admin/documentation" },
+  { icon: Users, label: "Accounts", href: "/admin/accounts" },
 ];
 
 export default function AdminSidebar() {
   const pathname = usePathname();
   const router = useRouter();
+  const [tier, setTier] = useState<"admin" | "super_admin" | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/admin/me")
+      .then((res) => res.json())
+      .then((data) => {
+        if (!cancelled && data.success) setTier(data.tier);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const links =
+    tier === "super_admin"
+      ? [LEAD_ORGANIZER_LINKS[0], ...OPERATIONAL_LINKS, ...LEAD_ORGANIZER_LINKS.slice(1)]
+      : OPERATIONAL_LINKS;
 
   async function handleSignOut() {
     const supabase = createBrowserSupabaseClient();
@@ -54,13 +81,13 @@ export default function AdminSidebar() {
             />
             <div className="pt-3">
               <span className="font-['Inter',sans-serif] font-semibold text-[12px] leading-[16px] tracking-[1.2px] text-[#6B7590] uppercase block">
-                Coordination Admin
+                {tier === "super_admin" ? "Lead Organizer" : "Coordination Team"}
               </span>
             </div>
           </div>
 
           <nav className="p-4 flex flex-col gap-1">
-            {ADMIN_LINKS.map(({ icon: Icon, label, href }) => {
+            {links.map(({ icon: Icon, label, href }) => {
               const active = pathname.startsWith(href);
               return (
                 <Link

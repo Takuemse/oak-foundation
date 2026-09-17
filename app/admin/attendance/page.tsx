@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { ScanLine, Users, RefreshCw, Search } from "lucide-react";
-import AppSidebar from "@/app/components/AppSidebar";
+import AdminSidebar from "@/app/components/AdminSidebar";
 
 type Summary = {
   event_date: string;
@@ -102,7 +102,7 @@ export default function AttendancePage() {
 
   return (
     <div className="min-h-screen bg-[#F4F6F8] flex flex-col md:flex-row text-[#0E1726] font-sans justify-center">
-      <AppSidebar />
+      <AdminSidebar />
 
       <div className="flex-1 flex justify-center">
         <main className="w-full max-w-full md:max-w-[672px] mx-auto min-h-screen px-4 pt-6 pb-10 md:px-8 md:py-10 flex flex-col items-start">

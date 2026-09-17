@@ -21,7 +21,7 @@ type RegisterResponse = {
   };
 };
 
-const ROLES = ["Partner", "OAK Staff", "Coordination Team", "Presenter", "Observer"];
+const ROLES = ["Partner", "OAK Staff", "Presenter", "Observer"];
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -256,6 +256,13 @@ export default function RegisterPage() {
                   onChange={(role) => update("role", role)}
                 />
               </Field>
+              <p className="font-['Inter',sans-serif] text-[12px] leading-[16px] text-[#6B7590] -mt-2">
+                Part of the Coordination Team?{" "}
+                <a href="/admin/login" className="text-[#162E55] underline hover:opacity-80">
+                  Sign in here
+                </a>{" "}
+                instead of registering.
+              </p>
 
               <Field label="Email Address" required>
                 <input
