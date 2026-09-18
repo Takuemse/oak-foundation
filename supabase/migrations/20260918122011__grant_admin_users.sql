@@ -1,0 +1,13 @@
+-- supabase/migrations/20260918140500_grant_admin_users_select.sql
+-- admin_users has RLS-correct policies (fixed in the prior migration's
+-- recursion cleanup), but the `authenticated` role was never granted
+-- table-level SELECT on it — Postgres checks GRANTs before RLS, so every
+-- direct query (e.g. /api/admin/me, /api/admin/accounts's caller check)
+-- was failing with 42501 regardless of which RLS policy would have
+-- allowed the row. This grant does not widen exposure: RLS still
+-- restricts rows to "your own row" (any admin) or "any row"
+-- (super_admin only, via is_super_admin()). Write paths to admin_users
+-- go exclusively through the service-role client in
+-- /api/admin/create-account, so no INSERT/UPDATE/DELETE grant is added
+-- here — only what the app actually needs.
+GRANT SELECT ON public.admin_users TO authenticated;

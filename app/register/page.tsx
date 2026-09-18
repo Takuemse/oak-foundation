@@ -143,7 +143,19 @@ export default function RegisterPage() {
           <RegistrationSuccess attendee={result} onRegisterAnother={registerAnother} />
         ) : (
           <>
-          
+
+            <div className="w-full flex justify-end items-center gap-1.5">
+              <span className="font-['Inter',sans-serif] text-[13px] leading-[18px] text-[#A0AEC0]">
+                Coordination Team or Lead Organizer?
+              </span>
+              <a
+                href="/admin/login"
+                className="font-['Inter',sans-serif] font-semibold text-[13px] leading-[18px] text-[#162E55] hover:text-[#0E1726] underline transition"
+              >
+                Sign In
+              </a>
+            </div>
+
             <div className="relative overflow-hidden w-full h-[167px] bg-[#162E55] rounded-[24px] p-6 shadow-[0px_1px_3px_rgba(28,46,90,0.05),0px_4px_16px_rgba(28,46,90,0.07)] flex flex-col justify-between">
               <div
                 className="pointer-events-none absolute w-[192px] h-[192px] -right-[42px] -top-[49px] rounded-full"
