@@ -35,6 +35,35 @@ export async function GET() {
       );
     }
 
+    // Key Takeaways and Resources are convening-wide, not tied to a
+    // specific day/post, so they're fetched independently rather than
+    // nested under a post the way photos are.
+    const { data: keyTakeaways, error: takeawaysError } = await supabase
+      .from("key_takeaways")
+      .select("id, content, display_order")
+      .order("display_order", { ascending: true });
+
+    if (takeawaysError) {
+      console.error("Key takeaways error:", takeawaysError);
+      return NextResponse.json(
+        { success: false, message: "Unable to load key takeaways." },
+        { status: 500 }
+      );
+    }
+
+    const { data: resourceRows, error: resourcesError } = await supabase
+      .from("resources")
+      .select("id, title, meta, storage_path, display_order")
+      .order("display_order", { ascending: true });
+
+    if (resourcesError) {
+      console.error("Resources error:", resourcesError);
+      return NextResponse.json(
+        { success: false, message: "Unable to load resources." },
+        { status: 500 }
+      );
+    }
+
     const result = (posts ?? []).map((post) => ({
       ...post,
       photos: (photos ?? [])
@@ -45,7 +74,20 @@ export async function GET() {
         })),
     }));
 
-    return NextResponse.json({ success: true, posts: result });
+    const resources = (resourceRows ?? []).map((r) => ({
+      id: r.id,
+      title: r.title,
+      meta: r.meta,
+      display_order: r.display_order,
+      fileUrl: supabase.storage.from("resources").getPublicUrl(r.storage_path).data.publicUrl,
+    }));
+
+    return NextResponse.json({
+      success: true,
+      posts: result,
+      keyTakeaways: keyTakeaways ?? [],
+      resources,
+    });
   } catch (err) {
     console.error("API documentation error:", err);
     return NextResponse.json(

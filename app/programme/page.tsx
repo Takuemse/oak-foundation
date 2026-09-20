@@ -1,9 +1,48 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { Star, MapPin, X, StickyNote, ChevronRight, NotebookPen, Images, ListChecks, FileText, Download, Plus, ImageIcon } from "lucide-react";
+import { Star, MapPin, X, StickyNote, ChevronRight, NotebookPen, Images, FileText, Plus, ListChecks, FileDown } from "lucide-react";
 import AppSidebar from "@/app/components/AppSidebar";
+import { createBrowserSupabaseClient } from "@/app/lib/superbase/browser";
+
+type DocPhoto = {
+  id: string;
+  caption: string | null;
+  photoUrl: string;
+};
+
+type DocPost = {
+  id: string;
+  event_date: string;
+  title: string;
+  content: string;
+  photos: DocPhoto[];
+};
+
+type Takeaway = {
+  id: string;
+  content: string;
+};
+
+type Resource = {
+  id: string;
+  title: string;
+  meta: string | null;
+  fileUrl: string;
+};
+
+function formatPostDate(dateStr: string) {
+  try {
+    return new Date(`${dateStr}T00:00:00`).toLocaleDateString("en-GB", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+    });
+  } catch {
+    return dateStr;
+  }
+}
 
 type SessionCategory = "plenary" | "breakout" | "workshop" | "social" | "break";
 
@@ -41,82 +80,6 @@ const CATEGORY_STYLES: Record<
 
 const NOTE_PREFIX = "oak_note:";
 
-type SessionNoteEntry = {
-  id: string;
-  initials: string;
-  name: string;
-  org: string;
-  meta: string;
-  text: string;
-};
-
-const SEED_SESSION_NOTES: SessionNoteEntry[] = [
-  {
-    id: "n1",
-    initials: "MS",
-    name: "Maria Schmidt",
-    org: "Open Society Foundations",
-    meta: "Day 1 · 14:32",
-    text: "The rights-based approaches session surfaced strong demand for a shared learning platform. OSF will follow up with MENA Rights Group on joint programming opportunities in the Mediterranean region.",
-  },
-  {
-    id: "n2",
-    initials: "JO",
-    name: "James Odhiambo",
-    org: "OAK Foundation",
-    meta: "Day 1 · 16:50",
-    text: "Digital Rights breakout: participants want a working group to share tools for operating in restricted digital environments. Interested orgs: Digital Frontiers, Access Now, EFF.",
-  },
-  {
-    id: "n3",
-    initials: "AD",
-    name: "Awa Diallo",
-    org: "Geneva Secretariat",
-    meta: "Day 2 · 11:15",
-    text: "Strategic communications workshop highly rated. Rashida's adaptive messaging framework is directly applicable across 60% of the portfolio. Requesting follow-up toolkit.",
-  },
-  {
-    id: "n4",
-    initials: "PAD",
-    name: "Prof. Amara Diallo",
-    org: "Sciences Po Paris",
-    meta: "Day 2 · 16:00",
-    text: "Fishbowl revealed consensus: philanthropy needs to accept longer time horizons (10+ years) and better share learning. Key ask: OAK to publish failure cases alongside success stories.",
-  },
-];
-
-const GALLERY_PHOTOS = [
-  { title: "Opening Plenary Session", src: "/images/opening-plenary-session.png" },
-  { title: "Roundtable Discussion", src: "/images/roundtable-discussion.png" },
-  { title: "Workshop In Progress", src: "/images/Workshop-in-progress.png" },
-  { title: "Welcome Reception Dinner", src: "/images/welcome-reception-dinner.png" },
-  { title: "Keynote Speaker", src: "/images/Keynote-speaker.png" },
-  { title: "Breakout Group Discussion", src: "/images/breakout-group-discussion.png" },
-];
-
-const KEY_TAKEAWAYS = [
-  "Philanthropy needs to accept 10+ year time horizons for systemic change",
-  "Shared learning infrastructure is the most requested resource across the portfolio",
-  "Digital rights must be integrated into all programme areas, not siloed",
-  "Rights-based framing significantly improves grantee advocacy effectiveness",
-  "Peer exchange is rated more valuable than expert-led sessions (92% vs 74%)",
-];
-
-const RESOURCES = [
-  { title: "Opening Plenary Presentation", meta: "PDF · 3.2 MB · Day 1" },
-  { title: "OAK Portfolio Overview 2024–26", meta: "PDF · 1.8 MB · Day 2" },
-  { title: "Action Planning Workbook", meta: "DOCX · 0.9 MB · Day 3" },
-  { title: "Partner Contact Directory", meta: "XLSX · 0.4 MB · All Days" },
-  { title: "Photo Gallery (High Res)", meta: "ZIP · 184 MB · All Days" },
-];
-
-function initialsFrom(name: string) {
-  const parts = name.trim().split(/\s+/).filter(Boolean);
-  if (parts.length === 0) return "?";
-  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
-  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
-}
-
 function formatTime(t: string) {
   const [h, m] = t.split(":");
   return `${h}:${m}`;
@@ -136,31 +99,80 @@ export default function ProgrammePage() {
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<"schedule" | "docs">("schedule");
 
-  const [sessionNotes, setSessionNotes] = useState<SessionNoteEntry[]>(SEED_SESSION_NOTES);
-  const [showAddNote, setShowAddNote] = useState(false);
-  const [newNoteName, setNewNoteName] = useState("");
-  const [newNoteOrg, setNewNoteOrg] = useState("");
-  const [newNoteText, setNewNoteText] = useState("");
+  // Docs tab — same source of truth as the standalone /documentation page
+  // (real documentation_posts/documentation_photos rows via the same
+  // /api/documentation route), not the old hardcoded fixture data. Kept
+  // in sync live the same way: a Realtime subscription refetches on any
+  // change, so a post published from /admin/documentation appears here
+  // too without a manual refresh.
+  const [docPosts, setDocPosts] = useState<DocPost[]>([]);
+  const [keyTakeaways, setKeyTakeaways] = useState<Takeaway[]>([]);
+  const [resources, setResources] = useState<Resource[]>([]);
+  const [docsLoading, setDocsLoading] = useState(true);
+  const [docsError, setDocsError] = useState<string | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
 
-  function submitNewNote() {
-    if (!newNoteName.trim() || !newNoteText.trim()) return;
-    const entry: SessionNoteEntry = {
-      id: `local-${Date.now()}`,
-      initials: initialsFrom(newNoteName),
-      name: newNoteName.trim(),
-      org: newNoteOrg.trim() || "OAK Partner Convening",
-      meta: `Day ${activeDay?.title.replace(/\D/g, "") || "1"} · ${new Date().toLocaleTimeString("en-GB", {
-        hour: "2-digit",
-        minute: "2-digit",
-      })}`,
-      text: newNoteText.trim(),
+  const loadDocs = useCallback(async () => {
+    try {
+      const res = await fetch("/api/documentation");
+      const data = await res.json();
+      if (!data.success) {
+        setDocsError(data.message ?? "Unable to load documentation.");
+        return;
+      }
+      setDocPosts(data.posts);
+      setKeyTakeaways(data.keyTakeaways ?? []);
+      setResources(data.resources ?? []);
+      setDocsError(null);
+    } catch {
+      setDocsError("Network error. Please try again.");
+    } finally {
+      setDocsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadDocs();
+
+    const supabase = createBrowserSupabaseClient();
+    supabase.auth.getUser().then(({ data }) => {
+      setIsAdmin(!!data.user);
+    });
+
+    const channel = supabase
+      .channel("programme-docs-tab-changes")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "documentation_posts" },
+        () => loadDocs()
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "documentation_photos" },
+        () => loadDocs()
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "key_takeaways" },
+        () => loadDocs()
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "resources" },
+        () => loadDocs()
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
     };
-    setSessionNotes((prev) => [entry, ...prev]);
-    setNewNoteName("");
-    setNewNoteOrg("");
-    setNewNoteText("");
-    setShowAddNote(false);
-  }
+  }, [loadDocs]);
+
+  const sortedDocPosts = useMemo(
+    () => [...docPosts].sort((a, b) => b.event_date.localeCompare(a.event_date)),
+    [docPosts]
+  );
+  const allDocPhotos = useMemo(() => docPosts.flatMap((p) => p.photos), [docPosts]);
 
   const [selectedSession, setSelectedSession] = useState<Session | null>(null);
   const [noteDraft, setNoteDraft] = useState("");
@@ -485,7 +497,15 @@ export default function ProgrammePage() {
 
           {activeTab === "docs" && (
             <div className="w-full flex flex-col items-start gap-[24px] pb-[24px]">
-              {/* Session Notes */}
+              {docsError && (
+                <div className="w-full bg-red-50 border border-red-200 text-red-700 text-[14px] rounded-[16px] px-[16px] py-[12px]">
+                  {docsError}
+                </div>
+              )}
+
+              {/* Session Notes — real documentation_posts rows, published
+                  from /admin/documentation. Same data, same live updates,
+                  as the standalone /documentation page. */}
               <div className="w-full flex flex-col items-start">
                 <div className="w-full flex items-center justify-between">
                   <div className="flex items-center gap-[8px]">
@@ -494,93 +514,60 @@ export default function ProgrammePage() {
                       Session Notes
                     </span>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => setShowAddNote((v) => !v)}
-                    className="flex items-center gap-1 bg-[#162E55] shadow-[0px_4px_10px_rgba(28,46,90,0.3)] px-[14px] py-[8px] rounded-[12px] font-chillax font-semibold text-[12px] leading-[16px] text-white hover:opacity-95 transition"
-                  >
-                    <Plus className="w-[12px] h-[12px]" />
-                    Add Note
-                  </button>
+                  {isAdmin && (
+                    <Link
+                      href="/admin/documentation"
+                      className="flex items-center gap-1 bg-[#162E55] shadow-[0px_4px_10px_rgba(28,46,90,0.3)] px-[14px] py-[8px] rounded-[12px] font-chillax font-semibold text-[12px] leading-[16px] text-white hover:opacity-95 transition"
+                    >
+                      <Plus className="w-[12px] h-[12px]" />
+                      Add Note
+                    </Link>
+                  )}
                 </div>
 
-                {showAddNote && (
-                  <div className="w-full bg-white border border-[rgba(28,46,90,0.1)] rounded-[24px] p-4 mt-3 flex flex-col gap-2">
-                    <div className="grid grid-cols-2 gap-2">
-                      <input
-                        value={newNoteName}
-                        onChange={(e) => setNewNoteName(e.target.value)}
-                        placeholder="Your name"
-                        className="h-[40px] rounded-[12px] bg-[#EEF1F5] px-3 font-['Inter'] text-[13px] text-[#0E1726] placeholder-[#A0AEC0] focus:outline-none focus:ring-2 focus:ring-[#162E55]/20 border-0"
-                      />
-                      <input
-                        value={newNoteOrg}
-                        onChange={(e) => setNewNoteOrg(e.target.value)}
-                        placeholder="Organization"
-                        className="h-[40px] rounded-[12px] bg-[#EEF1F5] px-3 font-['Inter'] text-[13px] text-[#0E1726] placeholder-[#A0AEC0] focus:outline-none focus:ring-2 focus:ring-[#162E55]/20 border-0"
-                      />
-                    </div>
-                    <textarea
-                      value={newNoteText}
-                      onChange={(e) => setNewNoteText(e.target.value)}
-                      placeholder="Jot down a takeaway, follow-up, or connection to make…"
-                      rows={3}
-                      className="w-full rounded-[12px] bg-[#EEF1F5] px-3 py-2.5 font-['Inter'] text-[13px] text-[#0E1726] placeholder-[#A0AEC0] focus:outline-none focus:ring-2 focus:ring-[#162E55]/20 resize-none border-0"
-                    />
-                    <div className="flex items-center justify-end gap-2 pt-1">
-                      <button
-                        type="button"
-                        onClick={() => setShowAddNote(false)}
-                        className="px-3 py-1.5 font-['Inter'] text-[12px] font-semibold text-[#6B7590] hover:text-[#0E1726] transition"
+                {docsLoading ? (
+                  <div className="w-full py-[40px] text-center font-['Inter'] text-[14px] text-[#6B7590]">
+                    Loading documentation…
+                  </div>
+                ) : sortedDocPosts.length === 0 ? (
+                  <div className="w-full bg-white rounded-[24px] border border-[rgba(28,46,90,0.1)] py-[32px] mt-3 text-center font-['Inter'] text-[14px] text-[#6B7590]">
+                    No updates published yet — check back during the event.
+                  </div>
+                ) : (
+                  <div className="w-full flex flex-col items-start pt-3 gap-3">
+                    {sortedDocPosts.map((post) => (
+                      <div
+                        key={post.id}
+                        className="w-full bg-white border border-[rgba(28,46,90,0.1)] shadow-[0px_1px_1.5px_rgba(28,46,90,0.05),0px_4px_8px_rgba(28,46,90,0.07)] rounded-[24px] p-4 flex flex-col"
                       >
-                        Cancel
-                      </button>
-                      <button
-                        type="button"
-                        onClick={submitNewNote}
-                        className="px-4 py-1.5 bg-[#162E55] text-white rounded-[10px] font-['Inter'] font-semibold text-[12px] hover:bg-[#0f213f] transition"
-                      >
-                        Post Note
-                      </button>
-                    </div>
+                        <div className="flex items-start justify-between w-full">
+                          <div className="flex items-center gap-[10px]">
+                            <div className="bg-[#162E55] rounded-[12px] w-7 h-7 flex items-center justify-center shrink-0">
+                              <FileText className="w-[13px] h-[13px] text-white" />
+                            </div>
+                            <div>
+                              <p className="font-['Inter'] font-semibold text-[12px] leading-[16px] text-[#0E1726]">
+                                {post.title}
+                              </p>
+                              <p className="font-['Inter'] text-[10px] leading-[15px] text-[#6B7590]">
+                                OAK Foundation Team
+                              </p>
+                            </div>
+                          </div>
+                          <span className="bg-[#EEF1F5] text-[#6B7590] px-2 py-1 rounded-[8px] font-['Inter'] text-[10px] leading-[15px] shrink-0">
+                            {formatPostDate(post.event_date)}
+                          </span>
+                        </div>
+                        <p className="font-['Inter'] text-[14px] leading-[22.75px] text-[#0E1726] pt-2.5">
+                          {post.content}
+                        </p>
+                      </div>
+                    ))}
                   </div>
                 )}
-
-                <div className="w-full flex flex-col items-start pt-3 gap-3">
-                  {sessionNotes.map((note) => (
-                    <div
-                      key={note.id}
-                      className="w-full bg-white border border-[rgba(28,46,90,0.1)] shadow-[0px_1px_1.5px_rgba(28,46,90,0.05),0px_4px_8px_rgba(28,46,90,0.07)] rounded-[24px] p-4 flex flex-col"
-                    >
-                      <div className="flex items-start justify-between w-full">
-                        <div className="flex items-center gap-[10px]">
-                          <div className="bg-[#162E55] rounded-[12px] w-7 h-7 flex items-center justify-center shrink-0">
-                            <span className="font-['Inter'] font-bold text-[10px] text-white">
-                              {note.initials}
-                            </span>
-                          </div>
-                          <div>
-                            <p className="font-['Inter'] font-semibold text-[12px] leading-[16px] text-[#0E1726]">
-                              {note.name}
-                            </p>
-                            <p className="font-['Inter'] text-[10px] leading-[15px] text-[#6B7590]">
-                              {note.org}
-                            </p>
-                          </div>
-                        </div>
-                        <span className="bg-[#EEF1F5] text-[#6B7590] px-2 py-1 rounded-[8px] font-['Inter'] text-[10px] leading-[15px] shrink-0">
-                          {note.meta}
-                        </span>
-                      </div>
-                      <p className="font-['Inter'] text-[14px] leading-[22.75px] text-[#0E1726] pt-2.5">
-                        {note.text}
-                      </p>
-                    </div>
-                  ))}
-                </div>
               </div>
 
-              {/* Photo Gallery */}
+              {/* Photo Gallery — real documentation_photos rows only. */}
               <div className="w-full flex flex-col items-start pt-[8px]">
                 <div className="w-full flex items-center justify-between">
                   <div className="flex items-center gap-[8px]">
@@ -590,27 +577,41 @@ export default function ProgrammePage() {
                     </span>
                   </div>
                   <span className="bg-[#EEF1F5] text-[#6B7590] px-2.5 py-1 rounded-[8px] font-['Inter'] text-[12px] leading-[16px]">
-                    {GALLERY_PHOTOS.length} photos
+                    {allDocPhotos.length} photos
                   </span>
                 </div>
-          <div className="w-full grid grid-cols-2 gap-[10px] pt-3">
-               {GALLERY_PHOTOS.map((photo) => (
-        <div
-                  key={photo.title}
-                      className="bg-[#E5E8EE] rounded-[16px] aspect-square flex flex-col items-center justify-center gap-2 overflow-hidden relative"
-    >
-               <img
-                       src={photo.src}
-                      alt={photo.title}
+
+                {!docsLoading && allDocPhotos.length === 0 ? (
+                  <div className="w-full bg-white rounded-[24px] border border-[rgba(28,46,90,0.1)] py-[32px] mt-3 text-center font-['Inter'] text-[14px] text-[#6B7590]">
+                    No photos uploaded yet — check back during the event.
+                  </div>
+                ) : (
+                  <div className="w-full grid grid-cols-2 gap-[10px] pt-3">
+                    {allDocPhotos.map((photo) => (
+                      <div
+                        key={photo.id}
+                        className="group relative bg-[#E5E8EE] rounded-[16px] aspect-square flex flex-col items-center justify-center overflow-hidden"
+                      >
+                        <img
+                          src={photo.photoUrl}
+                          alt={photo.caption ?? "Convening photo"}
                           className="w-full h-full object-cover absolute inset-0"
-                 />
-              
-                </div>
-                        ))}
+                        />
+                        {photo.caption && (
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition duration-200 p-[12px] flex items-end">
+                            <p className="font-['Inter'] text-[11px] leading-[14px] text-white line-clamp-2">
+                              {photo.caption}
+                            </p>
+                          </div>
+                        )}
                       </div>
+                    ))}
+                  </div>
+                )}
               </div>
 
-              {/* Key Takeaways */}
+              {/* Key Takeaways — real key_takeaways rows, same source as
+                  the standalone /documentation page. */}
               <div className="w-full flex flex-col items-start pt-[8px]">
                 <div className="flex items-center gap-[8px]">
                   <ListChecks className="w-[17px] h-[17px] text-[#0E1726]" />
@@ -618,24 +619,31 @@ export default function ProgrammePage() {
                     Key Takeaways
                   </span>
                 </div>
-                <div className="w-full bg-white border border-[rgba(28,46,90,0.1)] shadow-[0px_1px_1.5px_rgba(28,46,90,0.05),0px_4px_8px_rgba(28,46,90,0.07)] rounded-[24px] p-5 flex flex-col mt-3">
-                  {KEY_TAKEAWAYS.map((point, i) => (
-                    <div
-                      key={point}
-                      className={`flex gap-3 items-start w-full ${i > 0 ? "pt-3.5" : ""}`}
-                    >
-                      <div className="bg-[#162E55] rounded-full w-5 h-5 flex items-center justify-center shrink-0 mt-0.5">
-                        <span className="font-['Inter'] font-bold text-[9px] text-white">{i + 1}</span>
+                {keyTakeaways.length === 0 ? (
+                  <div className="w-full bg-white rounded-[24px] border border-[rgba(28,46,90,0.1)] py-[32px] mt-3 text-center font-['Inter'] text-[14px] text-[#6B7590]">
+                    No takeaways published yet.
+                  </div>
+                ) : (
+                  <div className="w-full bg-white border border-[rgba(28,46,90,0.1)] shadow-[0px_1px_1.5px_rgba(28,46,90,0.05),0px_4px_8px_rgba(28,46,90,0.07)] rounded-[24px] p-5 flex flex-col mt-3">
+                    {keyTakeaways.map((takeaway, i) => (
+                      <div
+                        key={takeaway.id}
+                        className={`flex gap-3 items-start w-full ${i > 0 ? "pt-3.5" : ""}`}
+                      >
+                        <div className="bg-[#162E55] rounded-full w-5 h-5 flex items-center justify-center shrink-0 mt-0.5">
+                          <span className="font-['Inter'] font-bold text-[9px] text-white">{i + 1}</span>
+                        </div>
+                        <p className="font-['Inter'] text-[14px] leading-[22.75px] text-[#0E1726]">
+                          {takeaway.content}
+                        </p>
                       </div>
-                      <p className="font-['Inter'] text-[14px] leading-[22.75px] text-[#0E1726]">
-                        {point}
-                      </p>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                )}
               </div>
 
-              {/* Resources */}
+              {/* Resources — real resources rows, same source as the
+                  standalone /documentation page. */}
               <div className="w-full flex flex-col items-start pt-[8px]">
                 <div className="flex items-center gap-[8px]">
                   <FileText className="w-[17px] h-[17px] text-[#0E1726]" />
@@ -643,28 +651,38 @@ export default function ProgrammePage() {
                     Resources
                   </span>
                 </div>
-                <div className="w-full flex flex-col gap-2 pt-3">
-                  {RESOURCES.map((res) => (
-                    <button
-                      key={res.title}
-                      type="button"
-                      className="w-full bg-white border border-[rgba(28,46,90,0.1)] shadow-[0px_1px_1.5px_rgba(28,46,90,0.05),0px_4px_8px_rgba(28,46,90,0.07)] rounded-[24px] p-4 flex items-center gap-[14px] hover:border-[rgba(28,46,90,0.25)] transition"
-                    >
-                      <div className="bg-[#EEF1F5] rounded-[16px] w-10 h-10 flex items-center justify-center shrink-0">
-                        <FileText className="w-4 h-4 text-[#6B7590]" />
-                      </div>
-                      <div className="flex-1 flex flex-col items-start min-w-0 text-left">
-                        <span className="font-['Inter'] font-medium text-[14px] leading-[20px] text-[#0E1726] truncate w-full">
-                          {res.title}
-                        </span>
-                        <span className="font-['Inter'] text-[12px] leading-[16px] text-[#6B7590]">
-                          {res.meta}
-                        </span>
-                      </div>
-                      <Download className="w-[15px] h-[15px] text-[#6B7590] shrink-0" />
-                    </button>
-                  ))}
-                </div>
+                {resources.length === 0 ? (
+                  <div className="w-full bg-white rounded-[24px] border border-[rgba(28,46,90,0.1)] py-[32px] mt-3 text-center font-['Inter'] text-[14px] text-[#6B7590]">
+                    No resources uploaded yet.
+                  </div>
+                ) : (
+                  <div className="w-full flex flex-col gap-2 pt-3">
+                    {resources.map((res) => (
+                      <a
+                        key={res.id}
+                        href={res.fileUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="w-full bg-white border border-[rgba(28,46,90,0.1)] shadow-[0px_1px_1.5px_rgba(28,46,90,0.05),0px_4px_8px_rgba(28,46,90,0.07)] rounded-[24px] p-4 flex items-center gap-[14px] hover:border-[rgba(28,46,90,0.25)] transition"
+                      >
+                        <div className="bg-[#EEF1F5] rounded-[16px] w-10 h-10 flex items-center justify-center shrink-0">
+                          <FileText className="w-4 h-4 text-[#6B7590]" />
+                        </div>
+                        <div className="flex-1 flex flex-col items-start min-w-0 text-left">
+                          <span className="font-['Inter'] font-medium text-[14px] leading-[20px] text-[#0E1726] truncate w-full">
+                            {res.title}
+                          </span>
+                          {res.meta && (
+                            <span className="font-['Inter'] text-[12px] leading-[16px] text-[#6B7590]">
+                              {res.meta}
+                            </span>
+                          )}
+                        </div>
+                        <FileDown className="w-[15px] h-[15px] text-[#6B7590] shrink-0" />
+                      </a>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           )}

@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { UserPlus, Calendar, Globe, ScanLine, BarChart3, QrCode } from "lucide-react";
+import { UserPlus, Calendar, Globe, ScanLine, BarChart3, QrCode, FileText } from "lucide-react";
 
 type NavRole = "Partner" | "OAK Staff" | "Coordination Team" | "Presenter" | "Observer";
 const PROGRAMME_ROLES: NavRole[] = ["OAK Staff", "Presenter", "Observer", "Coordination Team"];
@@ -22,13 +22,24 @@ const ALL_LINKS: {
   { icon: QrCode, label: "My QR Code", href: "/qr", exact: true, roles: PARTNER_ONLY },
   { icon: Calendar, label: "Programme", href: "/programme", exact: true, roles: PROGRAMME_ROLES },
   { icon: Globe, label: "Partners", href: "/partners", exact: false, roles: PROGRAMME_ROLES },
+  { icon: FileText, label: "Documentation", href: "/documentation", exact: true, roles: PROGRAMME_ROLES },
   { icon: ScanLine, label: "Check In", href: "/admin/check-in", exact: false, roles: COORDINATION_ONLY },
   { icon: BarChart3, label: "Attendance", href: "/admin/attendance", exact: false, roles: COORDINATION_ONLY },
 ];
+
 export default function AppSidebar() {
   const pathname = usePathname();
   const [hasRegistered, setHasRegistered] = useState(false);
   const [role, setRole] = useState<string | null>(null);
+  // A real, logged-in Supabase Auth admin (either tier) — proxy.ts already
+  // lets both tiers reach every programme-gated public page (see the
+  // `allowed = hasAttendeeAccess || !!user` check there) and both tiers
+  // can reach /admin/check-in and /admin/attendance regardless of the
+  // oak_session attendee cookie, which an admin never has. This sidebar
+  // previously only ever checked the attendee cookie's role, so a real
+  // admin browsing the public pages always fell through to "no role
+  // matched" and saw just Register.
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     function sync() {
@@ -40,8 +51,30 @@ export default function AppSidebar() {
     return () => window.removeEventListener("oak-registration-changed", sync);
   }, [pathname]);
 
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/admin/me")
+      .then((res) => res.json())
+      .then((data) => {
+        if (!cancelled) setIsAdmin(!!data.success);
+      })
+      .catch(() => {
+        if (!cancelled) setIsAdmin(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   const visibleLinks = ALL_LINKS.filter((link) => {
-    if (link.roles === null) return true;
+    if (link.roles === null) return true; // Register — always visible
+    if (link.roles === PARTNER_ONLY) {
+      // "My QR Code" is meaningless for an admin (no qrToken exists for
+      // a Supabase Auth account) — only a registered Partner attendee
+      // should see it, regardless of admin status.
+      return !isAdmin && hasRegistered && role === "Partner";
+    }
+    if (isAdmin) return true;
     if (!hasRegistered || !role) return false;
     return link.roles.includes(role as NavRole);
   });

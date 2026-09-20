@@ -20,6 +20,21 @@ type Post = {
   photos: Photo[];
 };
 
+type Takeaway = {
+  id: string;
+  content: string;
+  display_order: number;
+};
+
+type Resource = {
+  id: string;
+  title: string;
+  meta: string | null;
+  storage_path: string;
+  display_order: number;
+  fileUrl: string;
+};
+
 const EVENT_DATES = ["2026-11-09", "2026-11-10", "2026-11-11"];
 
 export default function AdminDocumentationPage() {
@@ -37,6 +52,17 @@ export default function AdminDocumentationPage() {
     content: "",
   });
   const [saving, setSaving] = useState(false);
+
+  // --- Key Takeaways ---
+  const [takeaways, setTakeaways] = useState<Takeaway[]>([]);
+  const [newTakeaway, setNewTakeaway] = useState("");
+  const [savingTakeaway, setSavingTakeaway] = useState(false);
+
+  // --- Resources ---
+  const [resources, setResources] = useState<Resource[]>([]);
+  const [resourceForm, setResourceForm] = useState({ title: "", meta: "" });
+  const [resourceFile, setResourceFile] = useState<File | null>(null);
+  const [savingResource, setSavingResource] = useState(false);
 
   const supabase = createBrowserSupabaseClient();
 
@@ -78,6 +104,36 @@ export default function AdminDocumentationPage() {
       }));
 
       setPosts(withPhotos);
+
+      const { data: takeawayRows, error: takeawayErr } = await supabase
+        .from("key_takeaways")
+        .select("id, content, display_order")
+        .order("display_order", { ascending: true });
+
+      if (takeawayErr) {
+        setError(takeawayErr.message);
+        setLoading(false);
+        return;
+      }
+      setTakeaways(takeawayRows ?? []);
+
+      const { data: resourceRows, error: resourceErr } = await supabase
+        .from("resources")
+        .select("id, title, meta, storage_path, display_order")
+        .order("display_order", { ascending: true });
+
+      if (resourceErr) {
+        setError(resourceErr.message);
+        setLoading(false);
+        return;
+      }
+      setResources(
+        (resourceRows ?? []).map((r) => ({
+          ...r,
+          fileUrl: supabase.storage.from("resources").getPublicUrl(r.storage_path).data.publicUrl,
+        }))
+      );
+
       setLoading(false);
     }
     loadPosts();
@@ -189,8 +245,122 @@ export default function AdminDocumentationPage() {
     setRefreshKey((k) => k + 1);
   }
 
-  
-      return (
+  // --- Key Takeaways handlers ---
+
+  async function handleAddTakeaway(e: React.FormEvent) {
+    e.preventDefault();
+    if (!newTakeaway.trim()) return;
+    setSavingTakeaway(true);
+    setError(null);
+
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    const nextOrder = takeaways.length > 0 ? Math.max(...takeaways.map((t) => t.display_order)) + 1 : 0;
+
+    const { error } = await supabase.from("key_takeaways").insert({
+      content: newTakeaway.trim(),
+      display_order: nextOrder,
+      created_by: user?.id ?? null,
+    });
+
+    setSavingTakeaway(false);
+
+    if (error) {
+      setError(error.message);
+      return;
+    }
+
+    setNewTakeaway("");
+    setRefreshKey((k) => k + 1);
+  }
+
+  async function handleDeleteTakeaway(id: string) {
+    if (!confirm("Delete this takeaway?")) return;
+    setDeletingId(id);
+    setError(null);
+
+    const { error } = await supabase.from("key_takeaways").delete().eq("id", id);
+
+    setDeletingId(null);
+
+    if (error) {
+      setError(error.message);
+      return;
+    }
+
+    setRefreshKey((k) => k + 1);
+  }
+
+  // --- Resources handlers ---
+
+  async function handleAddResource(e: React.FormEvent) {
+    e.preventDefault();
+    if (!resourceForm.title.trim() || !resourceFile) return;
+    setSavingResource(true);
+    setError(null);
+
+    try {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      const ext = resourceFile.name.split(".").pop();
+      const path = `${crypto.randomUUID()}.${ext}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from("resources")
+        .upload(path, resourceFile);
+
+      if (uploadError) {
+        setError(uploadError.message);
+        return;
+      }
+
+      const nextOrder = resources.length > 0 ? Math.max(...resources.map((r) => r.display_order)) + 1 : 0;
+
+      const { error: insertError } = await supabase.from("resources").insert({
+        title: resourceForm.title.trim(),
+        meta: resourceForm.meta.trim() || null,
+        storage_path: path,
+        display_order: nextOrder,
+        created_by: user?.id ?? null,
+      });
+
+      if (insertError) {
+        setError(insertError.message);
+        return;
+      }
+
+      setResourceForm({ title: "", meta: "" });
+      setResourceFile(null);
+      setRefreshKey((k) => k + 1);
+    } finally {
+      setSavingResource(false);
+    }
+  }
+
+  async function handleDeleteResource(resource: Resource) {
+    if (!confirm("Delete this resource?")) return;
+    setDeletingId(resource.id);
+    setError(null);
+
+    const { error: dbError } = await supabase.from("resources").delete().eq("id", resource.id);
+
+    if (dbError) {
+      setError(dbError.message);
+      setDeletingId(null);
+      return;
+    }
+
+    await supabase.storage.from("resources").remove([resource.storage_path]);
+
+    setDeletingId(null);
+    setRefreshKey((k) => k + 1);
+  }
+
+  return (
     <div className="min-h-screen bg-[#F4F6F8] flex">
       <AdminSidebar />
 
@@ -297,6 +467,114 @@ export default function AdminDocumentationPage() {
           </div>
         )}
 
+        {/* Key Takeaways */}
+        <div className="mt-8">
+          <h2 className="text-sm font-semibold text-slate-800 mb-2">Key Takeaways</h2>
+          <form
+            onSubmit={handleAddTakeaway}
+            className="bg-white rounded-xl border border-slate-200 p-4 mb-3 space-y-3"
+          >
+            <textarea
+              required
+              placeholder="Add a takeaway…"
+              rows={2}
+              value={newTakeaway}
+              onChange={(e) => setNewTakeaway(e.target.value)}
+              className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
+            />
+            <button
+              type="submit"
+              disabled={savingTakeaway}
+              className="w-full bg-[#0f1e3d] text-white rounded-lg py-2.5 text-sm font-medium disabled:opacity-50"
+            >
+              {savingTakeaway ? "Adding…" : "Add Takeaway"}
+            </button>
+          </form>
+
+          {!loading && takeaways.length > 0 && (
+            <div className="bg-white rounded-xl border border-slate-200 divide-y divide-slate-100">
+              {takeaways.map((t, i) => (
+                <div key={t.id} className="flex items-start justify-between gap-3 p-3">
+                  <p className="text-sm text-slate-800">
+                    <span className="text-slate-400 mr-1.5">{i + 1}.</span>
+                    {t.content}
+                  </p>
+                  <button
+                    onClick={() => handleDeleteTakeaway(t.id)}
+                    disabled={deletingId === t.id}
+                    className="text-xs text-red-500 hover:text-red-700 flex-shrink-0"
+                  >
+                    {deletingId === t.id ? "Deleting…" : "Delete"}
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Resources */}
+        <div className="mt-8">
+          <h2 className="text-sm font-semibold text-slate-800 mb-2">Resources</h2>
+          <form
+            onSubmit={handleAddResource}
+            className="bg-white rounded-xl border border-slate-200 p-4 mb-3 space-y-3"
+          >
+            <input
+              required
+              placeholder="Title (e.g. Opening Plenary Presentation)"
+              value={resourceForm.title}
+              onChange={(e) => setResourceForm((f) => ({ ...f, title: e.target.value }))}
+              className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
+            />
+            <input
+              placeholder="Meta (e.g. PDF · 3.2 MB · Day 1) — optional"
+              value={resourceForm.meta}
+              onChange={(e) => setResourceForm((f) => ({ ...f, meta: e.target.value }))}
+              className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
+            />
+            <input
+              required
+              type="file"
+              onChange={(e) => setResourceFile(e.target.files?.[0] ?? null)}
+              className="w-full text-sm text-slate-600"
+            />
+            <button
+              type="submit"
+              disabled={savingResource}
+              className="w-full bg-[#0f1e3d] text-white rounded-lg py-2.5 text-sm font-medium disabled:opacity-50"
+            >
+              {savingResource ? "Uploading…" : "Add Resource"}
+            </button>
+          </form>
+
+          {!loading && resources.length > 0 && (
+            <div className="bg-white rounded-xl border border-slate-200 divide-y divide-slate-100">
+              {resources.map((r) => (
+                <div key={r.id} className="flex items-center justify-between gap-3 p-3">
+                  <div className="min-w-0">
+                    <a
+                      href={r.fileUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-sm font-medium text-blue-600 hover:underline truncate block"
+                    >
+                      {r.title}
+                    </a>
+                    {r.meta && <p className="text-[11px] text-slate-400 mt-0.5">{r.meta}</p>}
+                  </div>
+                  <button
+                    onClick={() => handleDeleteResource(r)}
+                    disabled={deletingId === r.id}
+                    className="text-xs text-red-500 hover:text-red-700 flex-shrink-0"
+                  >
+                    {deletingId === r.id ? "Deleting…" : "Delete"}
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
         <Link
           href="/documentation"
           className="block text-center mt-6 border border-slate-200 text-slate-500 rounded-lg py-2 text-xs font-medium hover:bg-white transition"
@@ -307,8 +585,6 @@ export default function AdminDocumentationPage() {
     </div>
   );
 }
-
-
 
 function PhotoDropzone({
   postId,
