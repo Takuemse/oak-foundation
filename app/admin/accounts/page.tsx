@@ -130,7 +130,9 @@ export default function AdminAccountsPage() {
       <AdminSidebar />
 
       <div className="flex-1 flex justify-center">
-        <main className="w-full max-w-full md:max-w-[672px] mx-auto min-h-screen px-4 pt-6 pb-10 md:px-8 md:py-10 flex flex-col items-start gap-[16px]">
+        {/* pt-8/pb-[104px] on mobile: breathing room below the fixed
+            header and enough clearance above the fixed bottom nav. */}
+        <main className="w-full max-w-full md:max-w-[672px] mx-auto min-h-screen px-4 pt-8 pb-[104px] md:px-8 md:py-10 flex flex-col items-start gap-[20px]">
           <Link href="/admin/dashboard" className="flex items-center gap-2 group">
             <ChevronLeft className="w-4 h-4 text-[#1C2E5A]" />
             <span className="font-['Inter'] font-semibold text-[14px] text-[#1C2E5A] group-hover:underline">

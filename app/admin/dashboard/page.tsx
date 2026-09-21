@@ -34,7 +34,7 @@ export default function AdminDashboardPage() {
       <div className="min-h-screen bg-[#F4F6F8] flex flex-col md:flex-row text-[#0E1726] font-sans justify-center">
         <AdminSidebar />
         <div className="flex-1 flex items-center justify-center">
-          <p className="font-['Inter'] text-[14px] text-[#6B7590]">Loading…</p>
+          <p className="font-['Inter'] text-[14px] text-[#6B7590]">Loading...</p>
         </div>
       </div>
     );
@@ -105,7 +105,10 @@ export default function AdminDashboardPage() {
       <AdminSidebar />
 
       <div className="flex-1 flex justify-center">
-        <main className="w-full max-w-full md:max-w-[672px] mx-auto min-h-screen px-4 pt-6 pb-10 md:px-8 md:py-10 flex flex-col items-start gap-[16px]">
+        {/* pt-8/pb-[104px] on mobile: breathing room below the fixed
+            header and enough clearance above the new fixed bottom nav so
+            the last card is never covered by it. Desktop unaffected. */}
+        <main className="w-full max-w-full md:max-w-[672px] mx-auto min-h-screen px-4 pt-8 pb-[104px] md:px-8 md:py-10 flex flex-col items-start gap-[20px]">
           <div className="w-full flex flex-col items-start">
             <h1 className="font-chillax font-bold text-[24px] leading-[32px] text-[#0E1726]">
               Lead Organizer Dashboard

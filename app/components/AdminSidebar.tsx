@@ -53,9 +53,9 @@ export default function AdminSidebar() {
 
   return (
     <>
-      <header className="md:hidden w-full h-[82px] bg-[#162E55] flex flex-row items-center px-[16px] gap-[12px] shrink-0 z-30">
+      <header className="md:hidden w-full h-[82px] bg-[#162E55] flex flex-row justify-center items-center px-[16px] gap-[12px] shrink-0 z-30">
         <Image
-          src="/Logo-Oak-Foundation-White.svg"
+          src="/Logo-Oak-Foundation.svg2.svg"
           alt="Oak Foundation Logo"
           width={85}
           height={38}
@@ -130,6 +130,47 @@ export default function AdminSidebar() {
           </div>
         </div>
       </aside>
+
+      {/* Mobile bottom nav — previously missing entirely (a known gap
+          called out in the brief's own README). Matches AppSidebar's
+          mobile nav exactly: same blur, same active-pill treatment, same
+          icon+label layout, so the admin and public sides feel like one
+          product on a phone rather than two different apps. Every page
+          using AdminSidebar needs bottom padding at least this nav's
+          height (~64px, plus the safe-area inset on notched phones) so
+          the last card in a scrollable page never sits underneath it. */}
+      <nav className="md:hidden fixed bottom-0 left-0 w-full z-30 backdrop-blur-[24px] bg-[rgba(255,255,255,0.76)] border-t border-[rgba(255,255,255,0.55)]">
+        <div className="flex items-center px-1 py-1.5">
+          {links.map(({ icon: Icon, label, href }) => {
+            const active = pathname.startsWith(href);
+            return (
+              <Link
+                key={href}
+                href={href}
+                className="flex-1 flex flex-col items-center gap-[2px] px-0.5 py-1.5"
+              >
+                <div
+                  className={`flex flex-col items-center justify-center gap-[2px] px-3 py-1.5 rounded-[16px] transition-colors ${
+                    active ? "bg-[rgba(28,46,90,0.08)]" : ""
+                  }`}
+                >
+                  <Icon
+                    className="w-[19px] h-[19px]"
+                    strokeWidth={2}
+                    style={{ color: active ? "#1C2E5A" : "#6B7590" }}
+                  />
+                  <span
+                    className="font-['Inter',sans-serif] font-semibold text-[9px] leading-[13.5px] tracking-[0.225px] text-center whitespace-nowrap"
+                    style={{ color: active ? "#1C2E5A" : "#6B7590" }}
+                  >
+                    {label}
+                  </span>
+                </div>
+              </Link>
+            );
+          })}
+        </div>
+      </nav>
     </>
   );
 }

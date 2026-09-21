@@ -29,7 +29,6 @@ const REGIONS = [
   "Europe",
 ];
 
-// Per-type badge coloring, matching the Figma spec (each org type gets a distinct pastel pill)
 const TYPE_BADGE_STYLES: Record<string, { bg: string; text: string }> = {
   Foundation: { bg: "bg-[#EEF1F9]", text: "text-[#1C2E5A]" },
   NGO: { bg: "bg-[#ECFDF5]", text: "text-[#162E55]" },
@@ -38,7 +37,6 @@ const TYPE_BADGE_STYLES: Record<string, { bg: string; text: string }> = {
 };
 const DEFAULT_TYPE_BADGE = { bg: "bg-[#EEF1F5]", text: "text-[#6B7590]" };
 
-// Academic institutions get a distinct grey-gradient avatar in the Figma spec, instead of navy
 const isAcademic = (type: string | undefined) => type === "Academic";
 
 export default function PartnersPage() {
@@ -93,8 +91,9 @@ export default function PartnersPage() {
       <AppSidebar />
 
       <div className="flex-1 flex justify-center">
-        <main className="w-full max-w-full md:max-w-[672px] mx-auto min-h-screen px-4 pt-6 pb-10 md:px-8 md:py-10 flex flex-col items-start gap-[10px]">
-          {/* Header */}
+        {/* pt-8/pb-[104px] on mobile: breathing room below the fixed
+            header and clearance above AppSidebar's fixed bottom nav. */}
+        <main className="w-full max-w-full md:max-w-[672px] mx-auto min-h-screen px-4 pt-8 pb-[104px] md:px-8 md:py-10 flex flex-col items-start gap-[14px]">
           <div className="w-full flex flex-col items-start">
             <h1 className="font-chillax font-bold text-[24px] leading-[32px] text-[#0E1726]">
               Partner Directory
@@ -110,7 +109,6 @@ export default function PartnersPage() {
             </div>
           )}
 
-          {/* Search + Region filter card */}
           <div className="w-full bg-white border border-[rgba(28,46,90,0.1)] shadow-[0px_1px_1.5px_rgba(28,46,90,0.05),0px_4px_8px_rgba(28,46,90,0.07)] rounded-[24px] p-4 flex flex-col items-start">
             <div className="relative w-full h-[52.5px]">
               <Search className="absolute left-[16px] top-1/2 -translate-y-1/2 w-[15px] h-[15px] text-[#6B7590]" />
@@ -141,7 +139,6 @@ export default function PartnersPage() {
             </div>
           </div>
 
-          {/* Sub-Partners */}
           {!query && selectedRegion === "All Regions" && subPartners.length > 0 && (
             <div className="w-full flex flex-col items-start pt-1">
               <span className="font-['Inter'] font-semibold text-[10px] leading-[15px] tracking-[1px] uppercase text-[#6B7590]">
@@ -182,7 +179,6 @@ export default function PartnersPage() {
             </div>
           )}
 
-          {/* All Partners */}
           <div className="w-full flex flex-col items-start gap-3 pt-1">
             {!query && selectedRegion === "All Regions" && (
               <span className="font-['Inter'] font-semibold text-[10px] leading-[15px] tracking-[1px] uppercase text-[#6B7590]">
@@ -276,7 +272,6 @@ export default function PartnersPage() {
             )}
           </div>
 
-          {/* Footer Back Link */}
           <div className="w-full mt-[8px]">
             <Link
               href="/register"

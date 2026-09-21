@@ -77,12 +77,7 @@ export default function CheckInPage() {
 
   // No client-side role check here — this route is protected server-side
   // by proxy.ts, which requires a real, authenticated admin session before
-  // this page is ever served. (Previously this checked
-  // sessionStorage.getItem("oak_role") === "Coordination Team", a leftover
-  // from when Coordination Team self-registered through the public form
-  // and never had a real session. Since Coordination Team now signs in via
-  // /admin/login, that value is never set, so this guard would incorrectly
-  // bounce every real admin straight to /register.)
+  // this page is ever served.
 
   async function submitCheckIn(token: string) {
     if (!token.trim() || isSubmittingRef.current) return;
@@ -90,7 +85,6 @@ export default function CheckInPage() {
     setLoading(true);
     setResult(null);
 
-    // Safely stop scanner prior to network request/result view swap
     if (scannerRef.current && scannerRef.current.isScanning) {
       try {
         await scannerRef.current.stop();
@@ -117,15 +111,13 @@ export default function CheckInPage() {
     }
   }
 
-  // Camera initialization effect
-   useEffect(() => {
-    if (result) return; // Do not boot camera if a result card is displayed
+  useEffect(() => {
+    if (result) return;
 
     let isMounted = true;
     let html5QrcodeScanner: Html5Qrcode | null = null;
 
     const startScanner = async () => {
-      // Delay slightly to ensure DOM element exists after state change
       await new Promise((r) => setTimeout(r, 150));
       const container = document.getElementById(SCANNER_ELEMENT_ID);
       if (!container || !isMounted) return;
@@ -190,8 +182,11 @@ export default function CheckInPage() {
       <AdminSidebar />
 
       <div className="flex-1 flex justify-center">
-        <main className="w-full max-w-[672px] min-h-screen px-[16px] md:px-[32px] py-[24px] md:py-[40px] flex flex-col items-start">
-          <div className="w-full max-w-[608px] flex flex-col items-start p-0 shrink-0 mb-[20px]">
+        {/* pt-[32px]/pb-[112px] on mobile: breathing room below the fixed
+            header and enough clearance above the fixed bottom nav — this
+            page needs a little extra since the scanner card is tall. */}
+        <main className="w-full max-w-[672px] min-h-screen px-[16px] md:px-[32px] pt-[32px] pb-[112px] md:py-[40px] flex flex-col items-start">
+          <div className="w-full max-w-[608px] flex flex-col items-start p-0 shrink-0 mb-[24px]">
             <h1 className="font-chillax font-bold text-[22px] md:text-[24px] leading-[28px] md:leading-[32px] text-[#0E1726]">
               Event Check-In
             </h1>
@@ -330,7 +325,7 @@ export default function CheckInPage() {
               </div>
             </div>
 
-            <div className="w-full max-w-[608px] bg-white border border-[rgba(28,46,90,0.1)] shadow-[0px_1px_1.5px_rgba(28,46,90,0.05),0px_4px_8px_rgba(28,46,90,0.07)] rounded-[24px] p-[20px] flex flex-col items-start mt-[16px] shrink-0">
+            <div className="w-full max-w-[608px] bg-white border border-[rgba(28,46,90,0.1)] shadow-[0px_1px_1.5px_rgba(28,46,90,0.05),0px_4px_8px_rgba(28,46,90,0.07)] rounded-[24px] p-[20px] flex flex-col items-start mt-[20px] shrink-0">
               <span className="w-full font-['Inter'] font-semibold text-[10px] leading-[15px] tracking-[1px] uppercase text-[#6B7590] mb-[12px] text-left">
                 Simulate QR Scan
               </span>
@@ -369,7 +364,7 @@ export default function CheckInPage() {
 
             <form
               onSubmit={handleManualSubmit}
-              className="w-full max-w-[608px] bg-white border border-[rgba(28,46,90,0.1)] shadow-[0px_1px_1.5px_rgba(28,46,90,0.05),0px_4px_8px_rgba(28,46,90,0.07)] rounded-[24px] p-[20px] flex flex-col items-start mt-[16px] shrink-0"
+              className="w-full max-w-[608px] bg-white border border-[rgba(28,46,90,0.1)] shadow-[0px_1px_1.5px_rgba(28,46,90,0.05),0px_4px_8px_rgba(28,46,90,0.07)] rounded-[24px] p-[20px] flex flex-col items-start mt-[20px] shrink-0"
             >
               <label className="w-full font-['Inter'] font-semibold text-[10px] leading-[15px] tracking-[1px] uppercase text-[#6B7590] text-left">
                 Manual Code Entry

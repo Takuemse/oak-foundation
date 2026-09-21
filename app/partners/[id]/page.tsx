@@ -69,7 +69,7 @@ export default function PartnerDetailPage() {
     return (
       <div className="min-h-screen bg-[#F4F6F8] flex flex-col md:flex-row text-[#0E1726] font-sans justify-center">
         <AppSidebar />
-        <div className="flex-1 flex items-center justify-center">
+        <div className="flex-1 flex items-center justify-center pb-[104px] md:pb-0">
           <p className="font-['Inter'] text-[14px] text-[#6B7590]">Loading partner details…</p>
         </div>
       </div>
@@ -80,7 +80,9 @@ export default function PartnerDetailPage() {
     return (
       <div className="min-h-screen bg-[#F4F6F8] flex flex-col md:flex-row text-[#0E1726] font-sans justify-center">
         <AppSidebar />
-        <div className="flex-1 flex flex-col items-center justify-center p-8 gap-4 text-center">
+        {/* pb-[104px] on mobile: clearance above AppSidebar's fixed
+            bottom nav so this centered state isn't covered by it. */}
+        <div className="flex-1 flex flex-col items-center justify-center p-8 pb-[104px] md:pb-8 gap-4 text-center">
           <div className="w-14 h-14 rounded-[16px] bg-[#F1F3F5] flex items-center justify-center text-[#ADB5BD]">
             <Globe size={24} strokeWidth={1.75} />
           </div>
@@ -108,7 +110,9 @@ export default function PartnerDetailPage() {
       <AppSidebar />
 
       <div className="flex-1 flex justify-center">
-        <main className="w-full max-w-full md:max-w-[672px] mx-auto min-h-screen px-4 pt-6 pb-10 md:px-8 md:py-10 flex flex-col items-start gap-0">
+        {/* pt-8/pb-[104px] on mobile: breathing room below the fixed
+            header and clearance above AppSidebar's fixed bottom nav. */}
+        <main className="w-full max-w-full md:max-w-[672px] mx-auto min-h-screen px-4 pt-8 pb-[104px] md:px-8 md:py-10 flex flex-col items-start gap-0">
           {/* Back navigation */}
           <Link href="/partners" className="flex items-center gap-2 group">
             <ChevronLeft className="w-4 h-4 text-[#1C2E5A]" />

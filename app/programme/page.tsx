@@ -260,7 +260,9 @@ export default function ProgrammePage() {
       <AppSidebar />
 
       <div className="flex-1 flex justify-center">
-        <main className="w-full max-w-full md:max-w-[672px] mx-auto min-h-screen px-4 pt-6 pb-10 md:px-8 md:py-10 flex flex-col items-start gap-[10px]">
+        {/* pt-8/pb-[104px] on mobile: breathing room below the fixed
+            header and clearance above AppSidebar's fixed bottom nav. */}
+        <main className="w-full max-w-full md:max-w-[672px] mx-auto min-h-screen px-4 pt-8 pb-[104px] md:px-8 md:py-10 flex flex-col items-start gap-[14px]">
           <div className="w-full flex flex-col items-start">
             <h1 className="font-chillax font-bold text-[24px] leading-[32px] text-[#0E1726]">
               Programme

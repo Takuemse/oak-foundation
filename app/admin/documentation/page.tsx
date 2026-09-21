@@ -361,227 +361,251 @@ export default function AdminDocumentationPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#F4F6F8] flex">
+    <div className="min-h-screen bg-[#F4F6F8] flex flex-col md:flex-row text-[#0E1726] font-sans justify-center">
       <AdminSidebar />
 
-      <main className="flex-1 px-4 py-6 sm:px-8 sm:py-10 max-w-xl mx-auto w-full">
-        <div className="bg-[#0f1e3d] text-white rounded-xl px-5 py-4 mb-6">
-          <h1 className="text-lg font-semibold">Manage Documentation</h1>
-          <p className="text-sm text-slate-300 mt-0.5">Publish daily event notes and photos</p>
-        </div>
-
-        {error && (
-          <div className="bg-red-50 text-red-700 text-sm rounded-lg px-4 py-3 mb-4">{error}</div>
-        )}
-
-        <form onSubmit={handleCreate} className="bg-white rounded-xl border border-slate-200 p-4 mb-6 space-y-3">
-          <h2 className="text-sm font-semibold text-slate-800">New Post</h2>
-
-          <select
-            value={form.event_date}
-            onChange={(e) => setForm((f) => ({ ...f, event_date: e.target.value }))}
-            className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
-          >
-            {EVENT_DATES.map((d, i) => (
-              <option key={d} value={d}>
-                Day {i + 1} — {d}
-              </option>
-            ))}
-          </select>
-
-          <input
-            required
-            placeholder="Title"
-            value={form.title}
-            onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
-            className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
-          />
-
-          <textarea
-            required
-            placeholder="Notes / summary"
-            rows={4}
-            value={form.content}
-            onChange={(e) => setForm((f) => ({ ...f, content: e.target.value }))}
-            className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
-          />
-
-          <button
-            type="submit"
-            disabled={saving}
-            className="w-full bg-[#0f1e3d] text-white rounded-lg py-2.5 text-sm font-medium disabled:opacity-50"
-          >
-            {saving ? "Publishing…" : "Publish Post"}
-          </button>
-        </form>
-
-        {loading ? (
-          <p className="text-sm text-slate-400">Loading…</p>
-        ) : (
-          <div className="space-y-4">
-            {posts.map((post) => (
-              <div key={post.id} className="bg-white rounded-xl border border-slate-200 p-4">
-                <div className="flex items-start justify-between gap-2">
-                  <div>
-                    <p className="text-[11px] text-slate-400">{post.event_date}</p>
-                    <p className="text-sm font-semibold text-slate-800">{post.title}</p>
-                  </div>
-                  <button
-                    onClick={() => handleDeletePost(post.id)}
-                    disabled={deletingId === post.id}
-                    className="text-xs text-red-500 hover:text-red-700 flex-shrink-0"
-                  >
-                    {deletingId === post.id ? "Deleting…" : "Delete post"}
-                  </button>
-                </div>
-
-                {post.photos.length > 0 && (
-                  <div className="grid grid-cols-4 gap-2 mt-3">
-                    {post.photos.map((photo) => (
-                      <div key={photo.id} className="relative group">
-                        <img
-                          src={photo.photoUrl}
-                          alt=""
-                          className="w-full aspect-square object-cover rounded-md"
-                        />
-                        <button
-                          onClick={() => handleDeletePhoto(photo)}
-                          disabled={deletingId === photo.id}
-                          className="absolute top-1 right-1 bg-black/60 text-white rounded-full w-5 h-5 text-[10px] flex items-center justify-center hover:bg-red-600"
-                          title="Delete photo"
-                        >
-                          {deletingId === photo.id ? "…" : "✕"}
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                <PhotoDropzone
-                  postId={post.id}
-                  uploading={uploadingFor === post.id}
-                  onUpload={handlePhotoUpload}
-                />
-              </div>
-            ))}
+      <div className="flex-1 flex justify-center">
+        {/* pt-8/pb-[104px] on mobile: breathing room below the fixed
+            header and clearance above the fixed bottom nav. */}
+        <main className="w-full max-w-full md:max-w-[672px] mx-auto min-h-screen px-4 pt-8 pb-[104px] md:px-8 md:py-10 flex flex-col items-start gap-[20px]">
+          <div className="w-full flex flex-col items-start">
+            <h1 className="font-chillax font-bold text-[24px] leading-[32px] text-[#0E1726]">
+              Manage Documentation
+            </h1>
+            <p className="font-['Inter'] text-[14px] leading-[20px] text-[#6B7590] mt-[2px]">
+              Publish daily event notes and photos
+            </p>
           </div>
-        )}
 
-        {/* Key Takeaways */}
-        <div className="mt-8">
-          <h2 className="text-sm font-semibold text-slate-800 mb-2">Key Takeaways</h2>
+          {error && (
+            <div className="w-full bg-red-50 border border-red-200 text-red-700 text-[13px] rounded-[16px] px-4 py-3">
+              {error}
+            </div>
+          )}
+
           <form
-            onSubmit={handleAddTakeaway}
-            className="bg-white rounded-xl border border-slate-200 p-4 mb-3 space-y-3"
+            onSubmit={handleCreate}
+            className="w-full bg-white border border-[rgba(28,46,90,0.1)] shadow-[0px_1px_1.5px_rgba(28,46,90,0.05),0px_4px_8px_rgba(28,46,90,0.07)] rounded-[24px] p-5 flex flex-col gap-3"
           >
+            <span className="font-['Inter'] font-semibold text-[10px] leading-[15px] tracking-[1px] uppercase text-[#6B7590]">
+              New Post
+            </span>
+
+            <select
+              value={form.event_date}
+              onChange={(e) => setForm((f) => ({ ...f, event_date: e.target.value }))}
+              className="w-full h-[44px] rounded-[12px] bg-[#EEF1F5] px-3 font-['Inter'] text-[14px] text-[#0E1726] focus:outline-none focus:ring-2 focus:ring-[#162E55]/20 border-0"
+            >
+              {EVENT_DATES.map((d, i) => (
+                <option key={d} value={d}>
+                  Day {i + 1} — {d}
+                </option>
+              ))}
+            </select>
+
+            <input
+              required
+              placeholder="Title"
+              value={form.title}
+              onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
+              className="w-full h-[44px] rounded-[12px] bg-[#EEF1F5] px-3 font-['Inter'] text-[14px] text-[#0E1726] placeholder-[#A0AEC0] focus:outline-none focus:ring-2 focus:ring-[#162E55]/20 border-0"
+            />
+
             <textarea
               required
-              placeholder="Add a takeaway…"
-              rows={2}
-              value={newTakeaway}
-              onChange={(e) => setNewTakeaway(e.target.value)}
-              className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
+              placeholder="Notes / summary"
+              rows={4}
+              value={form.content}
+              onChange={(e) => setForm((f) => ({ ...f, content: e.target.value }))}
+              className="w-full rounded-[12px] bg-[#EEF1F5] px-3 py-2.5 font-['Inter'] text-[14px] text-[#0E1726] placeholder-[#A0AEC0] focus:outline-none focus:ring-2 focus:ring-[#162E55]/20 resize-none border-0"
             />
+
             <button
               type="submit"
-              disabled={savingTakeaway}
-              className="w-full bg-[#0f1e3d] text-white rounded-lg py-2.5 text-sm font-medium disabled:opacity-50"
+              disabled={saving}
+              className="w-full h-[48px] mt-1 bg-[#162E55] text-white rounded-[14px] font-chillax font-semibold text-[14px] shadow-[0px_4px_10px_rgba(28,46,90,0.3)] hover:opacity-95 disabled:opacity-50 transition"
             >
-              {savingTakeaway ? "Adding…" : "Add Takeaway"}
+              {saving ? "Publishing…" : "Publish Post"}
             </button>
           </form>
 
-          {!loading && takeaways.length > 0 && (
-            <div className="bg-white rounded-xl border border-slate-200 divide-y divide-slate-100">
-              {takeaways.map((t, i) => (
-                <div key={t.id} className="flex items-start justify-between gap-3 p-3">
-                  <p className="text-sm text-slate-800">
-                    <span className="text-slate-400 mr-1.5">{i + 1}.</span>
-                    {t.content}
-                  </p>
-                  <button
-                    onClick={() => handleDeleteTakeaway(t.id)}
-                    disabled={deletingId === t.id}
-                    className="text-xs text-red-500 hover:text-red-700 flex-shrink-0"
-                  >
-                    {deletingId === t.id ? "Deleting…" : "Delete"}
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* Resources */}
-        <div className="mt-8">
-          <h2 className="text-sm font-semibold text-slate-800 mb-2">Resources</h2>
-          <form
-            onSubmit={handleAddResource}
-            className="bg-white rounded-xl border border-slate-200 p-4 mb-3 space-y-3"
-          >
-            <input
-              required
-              placeholder="Title (e.g. Opening Plenary Presentation)"
-              value={resourceForm.title}
-              onChange={(e) => setResourceForm((f) => ({ ...f, title: e.target.value }))}
-              className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
-            />
-            <input
-              placeholder="Meta (e.g. PDF · 3.2 MB · Day 1) — optional"
-              value={resourceForm.meta}
-              onChange={(e) => setResourceForm((f) => ({ ...f, meta: e.target.value }))}
-              className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
-            />
-            <input
-              required
-              type="file"
-              onChange={(e) => setResourceFile(e.target.files?.[0] ?? null)}
-              className="w-full text-sm text-slate-600"
-            />
-            <button
-              type="submit"
-              disabled={savingResource}
-              className="w-full bg-[#0f1e3d] text-white rounded-lg py-2.5 text-sm font-medium disabled:opacity-50"
-            >
-              {savingResource ? "Uploading…" : "Add Resource"}
-            </button>
-          </form>
-
-          {!loading && resources.length > 0 && (
-            <div className="bg-white rounded-xl border border-slate-200 divide-y divide-slate-100">
-              {resources.map((r) => (
-                <div key={r.id} className="flex items-center justify-between gap-3 p-3">
-                  <div className="min-w-0">
-                    <a
-                      href={r.fileUrl}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="text-sm font-medium text-blue-600 hover:underline truncate block"
+          {loading ? (
+            <p className="font-['Inter'] text-[13px] text-[#6B7590]">Loading…</p>
+          ) : (
+            <div className="w-full flex flex-col gap-3">
+              {posts.map((post) => (
+                <div
+                  key={post.id}
+                  className="w-full bg-white border border-[rgba(28,46,90,0.1)] shadow-[0px_1px_1.5px_rgba(28,46,90,0.05),0px_4px_8px_rgba(28,46,90,0.07)] rounded-[24px] p-4"
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <div>
+                      <p className="font-['Inter'] text-[11px] text-[#A0AEC0]">{post.event_date}</p>
+                      <p className="font-['Inter'] font-semibold text-[14px] text-[#0E1726]">{post.title}</p>
+                    </div>
+                    <button
+                      onClick={() => handleDeletePost(post.id)}
+                      disabled={deletingId === post.id}
+                      className="font-['Inter'] text-[12px] font-medium text-red-500 hover:text-red-700 flex-shrink-0"
                     >
-                      {r.title}
-                    </a>
-                    {r.meta && <p className="text-[11px] text-slate-400 mt-0.5">{r.meta}</p>}
+                      {deletingId === post.id ? "Deleting…" : "Delete post"}
+                    </button>
                   </div>
-                  <button
-                    onClick={() => handleDeleteResource(r)}
-                    disabled={deletingId === r.id}
-                    className="text-xs text-red-500 hover:text-red-700 flex-shrink-0"
-                  >
-                    {deletingId === r.id ? "Deleting…" : "Delete"}
-                  </button>
+
+                  {post.photos.length > 0 && (
+                    <div className="grid grid-cols-4 gap-2 mt-3">
+                      {post.photos.map((photo) => (
+                        <div key={photo.id} className="relative group">
+                          <img
+                            src={photo.photoUrl}
+                            alt=""
+                            className="w-full aspect-square object-cover rounded-[12px]"
+                          />
+                          <button
+                            onClick={() => handleDeletePhoto(photo)}
+                            disabled={deletingId === photo.id}
+                            className="absolute top-1 right-1 bg-black/60 text-white rounded-full w-5 h-5 text-[10px] flex items-center justify-center hover:bg-red-600"
+                            title="Delete photo"
+                          >
+                            {deletingId === photo.id ? "…" : "✕"}
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  <PhotoDropzone
+                    postId={post.id}
+                    uploading={uploadingFor === post.id}
+                    onUpload={handlePhotoUpload}
+                  />
                 </div>
               ))}
             </div>
           )}
-        </div>
 
-        <Link
-          href="/documentation"
-          className="block text-center mt-6 border border-slate-200 text-slate-500 rounded-lg py-2 text-xs font-medium hover:bg-white transition"
-        >
-          View Public Documentation
-        </Link>
-      </main>
+          {/* Key Takeaways */}
+          <div className="w-full flex flex-col items-start pt-2">
+            <span className="font-['Inter'] font-semibold text-[10px] leading-[15px] tracking-[1px] uppercase text-[#6B7590] mb-2">
+              Key Takeaways
+            </span>
+            <form
+              onSubmit={handleAddTakeaway}
+              className="w-full bg-white border border-[rgba(28,46,90,0.1)] shadow-[0px_1px_1.5px_rgba(28,46,90,0.05),0px_4px_8px_rgba(28,46,90,0.07)] rounded-[24px] p-4 mb-3 flex flex-col gap-3"
+            >
+              <textarea
+                required
+                placeholder="Add a takeaway…"
+                rows={2}
+                value={newTakeaway}
+                onChange={(e) => setNewTakeaway(e.target.value)}
+                className="w-full rounded-[12px] bg-[#EEF1F5] px-3 py-2.5 font-['Inter'] text-[14px] text-[#0E1726] placeholder-[#A0AEC0] focus:outline-none focus:ring-2 focus:ring-[#162E55]/20 resize-none border-0"
+              />
+              <button
+                type="submit"
+                disabled={savingTakeaway}
+                className="w-full h-[44px] bg-[#162E55] text-white rounded-[14px] font-chillax font-semibold text-[13px] shadow-[0px_4px_10px_rgba(28,46,90,0.3)] hover:opacity-95 disabled:opacity-50 transition"
+              >
+                {savingTakeaway ? "Adding…" : "Add Takeaway"}
+              </button>
+            </form>
+
+            {!loading && takeaways.length > 0 && (
+              <div className="w-full bg-white border border-[rgba(28,46,90,0.1)] rounded-[24px] divide-y divide-[rgba(28,46,90,0.08)]">
+                {takeaways.map((t, i) => (
+                  <div key={t.id} className="flex items-start justify-between gap-3 p-4">
+                    <p className="font-['Inter'] text-[14px] text-[#0E1726]">
+                      <span className="text-[#A0AEC0] mr-1.5">{i + 1}.</span>
+                      {t.content}
+                    </p>
+                    <button
+                      onClick={() => handleDeleteTakeaway(t.id)}
+                      disabled={deletingId === t.id}
+                      className="font-['Inter'] text-[12px] font-medium text-red-500 hover:text-red-700 flex-shrink-0"
+                    >
+                      {deletingId === t.id ? "Deleting…" : "Delete"}
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Resources */}
+          <div className="w-full flex flex-col items-start pt-2">
+            <span className="font-['Inter'] font-semibold text-[10px] leading-[15px] tracking-[1px] uppercase text-[#6B7590] mb-2">
+              Resources
+            </span>
+            <form
+              onSubmit={handleAddResource}
+              className="w-full bg-white border border-[rgba(28,46,90,0.1)] shadow-[0px_1px_1.5px_rgba(28,46,90,0.05),0px_4px_8px_rgba(28,46,90,0.07)] rounded-[24px] p-4 mb-3 flex flex-col gap-3"
+            >
+              <input
+                required
+                placeholder="Title (e.g. Opening Plenary Presentation)"
+                value={resourceForm.title}
+                onChange={(e) => setResourceForm((f) => ({ ...f, title: e.target.value }))}
+                className="w-full h-[44px] rounded-[12px] bg-[#EEF1F5] px-3 font-['Inter'] text-[14px] text-[#0E1726] placeholder-[#A0AEC0] focus:outline-none focus:ring-2 focus:ring-[#162E55]/20 border-0"
+              />
+              <input
+                placeholder="Meta (e.g. PDF · 3.2 MB · Day 1) — optional"
+                value={resourceForm.meta}
+                onChange={(e) => setResourceForm((f) => ({ ...f, meta: e.target.value }))}
+                className="w-full h-[44px] rounded-[12px] bg-[#EEF1F5] px-3 font-['Inter'] text-[14px] text-[#0E1726] placeholder-[#A0AEC0] focus:outline-none focus:ring-2 focus:ring-[#162E55]/20 border-0"
+              />
+              <input
+                required
+                type="file"
+                onChange={(e) => setResourceFile(e.target.files?.[0] ?? null)}
+                className="w-full font-['Inter'] text-[13px] text-[#6B7590]"
+              />
+              <button
+                type="submit"
+                disabled={savingResource}
+                className="w-full h-[44px] bg-[#162E55] text-white rounded-[14px] font-chillax font-semibold text-[13px] shadow-[0px_4px_10px_rgba(28,46,90,0.3)] hover:opacity-95 disabled:opacity-50 transition"
+              >
+                {savingResource ? "Uploading…" : "Add Resource"}
+              </button>
+            </form>
+
+            {!loading && resources.length > 0 && (
+              <div className="w-full bg-white border border-[rgba(28,46,90,0.1)] rounded-[24px] divide-y divide-[rgba(28,46,90,0.08)]">
+                {resources.map((r) => (
+                  <div key={r.id} className="flex items-center justify-between gap-3 p-4">
+                    <div className="min-w-0">
+                      <a
+                        href={r.fileUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="font-['Inter'] font-medium text-[14px] text-[#162E55] hover:underline truncate block"
+                      >
+                        {r.title}
+                      </a>
+                      {r.meta && (
+                        <p className="font-['Inter'] text-[11px] text-[#A0AEC0] mt-0.5">{r.meta}</p>
+                      )}
+                    </div>
+                    <button
+                      onClick={() => handleDeleteResource(r)}
+                      disabled={deletingId === r.id}
+                      className="font-['Inter'] text-[12px] font-medium text-red-500 hover:text-red-700 flex-shrink-0"
+                    >
+                      {deletingId === r.id ? "Deleting…" : "Delete"}
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <Link
+            href="/documentation"
+            className="w-full text-center border border-[rgba(28,46,90,0.1)] text-[#6B7590] bg-white rounded-[14px] py-3 font-['Inter'] text-[12px] font-semibold hover:bg-[#EEF1F5] transition"
+          >
+            View Public Documentation
+          </Link>
+        </main>
+      </div>
     </div>
   );
 }
@@ -614,8 +638,8 @@ function PhotoDropzone({
       }}
       onDragLeave={() => setIsDragging(false)}
       onDrop={handleDrop}
-      className={`mt-3 border-2 border-dashed rounded-lg px-3 py-4 text-center text-xs transition ${
-        isDragging ? "border-[#0f1e3d] bg-slate-50 text-slate-700" : "border-slate-200 text-slate-400"
+      className={`mt-3 border-2 border-dashed rounded-[16px] px-3 py-4 text-center font-['Inter'] text-[12px] transition ${
+        isDragging ? "border-[#162E55] bg-[#EEF1F5] text-[#0E1726]" : "border-[rgba(28,46,90,0.15)] text-[#A0AEC0]"
       }`}
     >
       {uploading ? (
@@ -623,7 +647,7 @@ function PhotoDropzone({
       ) : (
         <>
           Drag a photo here, or{" "}
-          <label className="text-blue-600 cursor-pointer">
+          <label className="text-[#162E55] font-medium cursor-pointer">
             browse
             <input
               type="file"
